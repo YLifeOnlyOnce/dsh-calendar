@@ -1,0 +1,88 @@
+{
+  "name": "dsh-calendar",
+  "version": "0.1.0-rc.7",
+  "description": "A beautiful usage calendar for DeepSeek Harness — see at a glance when and what DeepSeek did, in day/month/year views, with recurring-task scheduling.",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md"
+  ],
+  "scripts": {
+    "build": "tsdown && tsdown --config tsdown.client.config.ts && tsdown --config tsdown.client.dts.config.ts && node -e \"const fs=require('node:fs');fs.renameSync('lib/client.d.mts','lib/client.d.ts');fs.rmSync('lib/client.mjs',{force:true})\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "prepare": "tsdown --config tsdown.prepare.config.ts && tsdown --config tsdown.client.config.ts && tsdown --config tsdown.client.dts.config.ts && node -e \"const fs=require('node:fs');fs.renameSync('lib/client.d.mts','lib/client.d.ts');fs.rmSync('lib/client.mjs',{force:true})\""
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "calendar",
+    "schedule",
+    "timeline",
+    "heatmap",
+    "usage"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-web-react": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-session": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-session-projection": "0.1.0-rc.7",
+    "@deepseek-ai/schemastery": "^3.18.0",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-client-web-react": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-llm": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-session": "0.1.0-rc.7",
+    "@deepseek-ai/dsh-session-projection": "0.1.0-rc.7",
+    "@deepseek-ai/schemastery": "^3.18.0",
+    "@types/node": "^22.20.0",
+    "@types/react": "^18.3.1",
+    "react": "^18.3.1",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ],
+      "platform": "web"
+    }
+  }
+}

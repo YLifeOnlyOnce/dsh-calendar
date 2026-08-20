@@ -1,0 +1,15 @@
+# dsh-calendar bundle patch (declared by the `dsh.bundle.patch` manifest
+# field): applied over the dsh-base layer when this package appears in a
+# profile's `dsh.profile.bundles` list.
+#
+# Users override these values in their own profile's cordis.patch.yml, e.g.:
+#   - id: calendar
+#     config:
+#       keepDays: 200
+- insert:
+    - id: calendar
+      name: dsh-calendar
+      config:
+        keepDays: 400
+        intervalCap: 300
+        hourProfileDays: 30
