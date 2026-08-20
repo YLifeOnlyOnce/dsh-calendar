@@ -6,15 +6,6 @@ export const NS = 'calendar'
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
   'nav': '📅 日程表',
-  'layout.title': '布局设置',
-  'layout.tip': '拖动卡片左上角 ⠿ 调整位置',
-  'layout.reset': '恢复默认布局',
-  'layout.done': '完成',
-  'widget.stats': '统计概览',
-  'widget.year': '年度热力图',
-  'widget.week': '7天时间线',
-  'widget.day': '日视图时间轴',
-  'widget.month': '月历',
   'view.year': '年',
   'view.month': '月',
   'view.week': '7天',
@@ -52,15 +43,6 @@ export const zh = {
 /** English dictionary, key-identical to the Chinese source of truth. */
 export const en: Record<CalendarKey, string> = {
   'nav': '📅 Calendar',
-  'layout.title': 'Layout',
-  'layout.tip': 'Drag the ⠿ handle on a card to rearrange',
-  'layout.reset': 'Reset layout',
-  'layout.done': 'Done',
-  'widget.stats': 'Stats',
-  'widget.year': 'Year heatmap',
-  'widget.week': '7-day timeline',
-  'widget.day': 'Day timeline',
-  'widget.month': 'Month grid',
   'view.year': 'Year',
   'view.month': 'Month',
   'view.week': '7d',
