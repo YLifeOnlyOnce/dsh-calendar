@@ -28,6 +28,7 @@
     "build": "tsdown && tsdown --config tsdown.client.config.ts && tsdown --config tsdown.client.dts.config.ts && node -e \"const fs=require('node:fs');fs.renameSync('lib/client.d.mts','lib/client.d.ts');fs.rmSync('lib/client.mjs',{force:true})\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "verify:sessions": "node scripts/verify-sessions.ts",
     "prepare": "tsdown --config tsdown.prepare.config.ts && tsdown --config tsdown.client.config.ts && tsdown --config tsdown.client.dts.config.ts && node -e \"const fs=require('node:fs');fs.renameSync('lib/client.d.mts','lib/client.d.ts');fs.rmSync('lib/client.mjs',{force:true})\""
   },
   "keywords": [
