@@ -118,12 +118,24 @@ export const CALENDAR_CSS = `
 .dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 0; }
 .dsh-cal-axis .tick::after { content: ''; position: absolute; left: 50%; top: 11px; height: 5px; width: 1px; background: var(--dsh-cal-border); }
 .dsh-cal-wsgroup { margin-bottom: 12px; }
-.dsh-cal-wsname { font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+.dsh-cal-wsname {
+  font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); margin-bottom: 5px;
+  display: flex; align-items: center; gap: 6px;
+  position: sticky; left: 0; z-index: 5; padding-right: 10px;
+  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-2, #16191e) 88%, transparent);
+}
 .dsh-cal-wsname::before { content: ''; width: 3px; height: 12px; border-radius: 2px; background: var(--dsh-cal-accent); }
 .dsh-cal-sessrow { display: flex; align-items: center; margin-bottom: 3px; }
-.dsh-cal-sessname { width: 150px; flex-shrink: 0; font-size: 11px; color: var(--dsh-cal-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
+.dsh-cal-sessname {
+  width: 150px; flex-shrink: 0; font-size: 11px; color: var(--dsh-cal-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px;
+  position: sticky; left: 0; z-index: 4;
+  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-2, #16191e) 88%, transparent);
+}
 .dsh-cal-sessname .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
-.dsh-cal-track { position: relative; height: 14px; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); border-radius: 4px; flex: 1; }
+.dsh-cal-track { position: relative; height: 14px; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); border-radius: 4px; flex: 1; overflow: hidden; }
+.dsh-cal-trackgrid { position: absolute; inset: 0; pointer-events: none; }
+.dsh-cal-trackgrid span { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dsh-cal-text) 8%, transparent); }
 .dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.88; transform-origin: left; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
 .dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }

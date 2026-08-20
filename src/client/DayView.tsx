@@ -173,6 +173,11 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
     return el.getBoundingClientRect().left + el.clientWidth / 2
   }
 
+  // Tick density: labels thin out as the scale shrinks so they never overlap.
+  const tickStep = hourW >= 60 ? 1 : hourW >= 32 ? 2 : hourW >= 20 ? 3 : hourW >= 12 ? 6 : 12
+  const hourTicks: number[] = []
+  for (let h = 0; h <= 24; h += tickStep) hourTicks.push(h)
+
   return (
     <div className="dsh-cal-daybox">
       {!compact && (
@@ -186,7 +191,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
       <div ref={rootRef} className="dsh-cal-day">
         <div className="dsh-cal-daycontent">
           <div className="dsh-cal-axis" style={{ width: dayW }}>
-            {Array.from({ length: 25 }, (_, h) => (
+            {hourTicks.map(h => (
               <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
             ))}
           </div>
@@ -207,6 +212,11 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                     {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
                   </div>
                   <div className="dsh-cal-track" style={{ width: dayW }}>
+                    <div className="dsh-cal-trackgrid" aria-hidden="true">
+                      {hourTicks.map(h => (
+                        <span key={h} style={{ left: h * hourW }} />
+                      ))}
+                    </div>
                     {(() => {
                       const segments = mergeSegments(session.intervals)
                       return segments.map((seg, i) => {
