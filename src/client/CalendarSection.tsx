@@ -30,6 +30,10 @@ type View = 'year' | 'month' | 'week' | 'day'
 /** Props delivered by the slot outlet: standard hooks + the locale seat. */
 export interface CalendarSectionProps {
   useSessions: SnapshotSelectorHook<SessionListState>
+  /** Injected sessions service (drill into a conversation). */
+  sessions?: { open: (id: string) => void }
+  /** Close the settings panel (owner share). */
+  close?: () => void
   t: Translator
 }
 
@@ -85,13 +89,13 @@ function CountUpNumber({ value, active }: { value: number; active: boolean }): R
 }
 
 export function CalendarSection(props: CalendarSectionProps): ReactNode {
-  const { useSessions, t } = props
-  const sessions = useSessions(s => s)
+  const { useSessions, sessions: sessionsService, close, t } = props
+  const sessionList = useSessions(s => s)
 
   const rows = useMemo<SessionRow[]>(() => {
     const out: SessionRow[] = []
-    for (const id of sessions.ids) {
-      const row = sessions.byId[id]
+    for (const id of sessionList.ids) {
+      const row = sessionList.byId[id]
       if (row === undefined) continue
       out.push({
         id,
@@ -102,7 +106,7 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
       })
     }
     return out
-  }, [sessions])
+  }, [sessionList])
   const days = useMemo(() => aggregateDays(rows), [rows])
   const hasData = useMemo(() => rows.some(r => r.value !== undefined), [rows])
 
@@ -141,6 +145,12 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
 
   const rangeStatKey: CalendarKey = view === 'year' ? 'stat.thisYear' : view === 'month' ? 'stat.thisMonth' : 'stat.today'
   const rangeKey = `${view}:${rangeText(view, cursor)}`
+
+  /** Drill into a conversation: close the settings modal, then open the session. */
+  const openSession = (id: string): void => {
+    close?.()
+    sessionsService?.open(id)
+  }
 
   return (
     <div className="dsh-cal-root">
@@ -194,9 +204,9 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
             <MonthView days={days} month={cursor} active onPickDay={date => { setCursor(parseDateKey(date)); setView('day') }} t={t} />
           )}
           {view === 'week' && (
-            <WeekView rows={rows} weekStart={weekStartOf(cursor)} active t={t} />
+            <WeekView rows={rows} weekStart={weekStartOf(cursor)} active onOpenSession={openSession} t={t} />
           )}
-          {view === 'day' && <DayView rows={rows} date={dateKey(cursor)} active t={t} />}
+          {view === 'day' && <DayView rows={rows} date={dateKey(cursor)} active onOpenSession={openSession} t={t} />}
         </div>
       ) : (
         <div className="dsh-cal-empty">

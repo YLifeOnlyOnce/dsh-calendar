@@ -21,6 +21,8 @@ export interface DayViewProps {
   active: boolean
   /** Compact card sizing (main-UI cards); default is the full settings view. */
   compact?: boolean
+  /** Open a session (drill into the conversation). */
+  onOpenSession?: (sessionId: string) => void
   t: Translator
 }
 
@@ -56,7 +58,7 @@ interface WorkspaceGroup {
   sessions: SessionDay[]
 }
 
-export function DayView({ rows, date, active, compact = false, t }: DayViewProps): ReactNode {
+export function DayView({ rows, date, active, compact = false, onOpenSession, t }: DayViewProps): ReactNode {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
   const hourW = compact ? HOUR_W_COMPACT : HOUR_W
@@ -153,6 +155,7 @@ export function DayView({ rows, date, active, compact = false, t }: DayViewProps
                           style={{ left: (startMin / 1440) * dayW, width }}
                           onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
                           onMouseLeave={() => setTip(null)}
+                          onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
                         >
                           {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
                         </div>

@@ -4,7 +4,7 @@
  * ids and plugin-merged variants; the fold only reads the fields below.
  */
 
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import type { CalendarScheduleChange } from '../src/types'
 
 function ev(type: string, seq: number, time: number, data: unknown): SessionEvent {

@@ -17,7 +17,7 @@
  * @module dsh-calendar/schedules
  */
 
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import type { CalendarDispatch, CalendarSchedule } from './types.ts'
 
 /** Dispatch-history cap (bounded wire value). */

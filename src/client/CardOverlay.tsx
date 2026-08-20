@@ -24,6 +24,8 @@ import { DayView } from './DayView.tsx'
 /** Props delivered by the shell.overlay outlet. */
 export interface CardOverlayProps {
   useSessions: SnapshotSelectorHook<SessionListState>
+  /** Injected sessions service (drill into a conversation). */
+  sessions?: { open: (id: string) => void }
   t: Translator
 }
 
@@ -84,14 +86,14 @@ function DraggableCard({ id, title, pos, collapsed, onMove, onToggleCollapsed, o
 
 /** The overlay layer: renders every visible card at its stored position. */
 export function CardOverlay(props: CardOverlayProps): ReactNode {
-  const { useSessions, t } = props
-  const sessions = useSessions(s => s)
+  const { useSessions, sessions: sessionsService, t } = props
+  const sessionList = useSessions(s => s)
   const layout = useCardLayout()
 
   const rows = useMemo<SessionRow[]>(() => {
     const out: SessionRow[] = []
-    for (const id of sessions.ids) {
-      const row = sessions.byId[id]
+    for (const id of sessionList.ids) {
+      const row = sessionList.byId[id]
       if (row === undefined) continue
       out.push({
         id,
@@ -102,7 +104,7 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
       })
     }
     return out
-  }, [sessions])
+  }, [sessionList])
   const days = useMemo(() => aggregateDays(rows), [rows])
   const hasData = useMemo(() => rows.some(r => r.value !== undefined), [rows])
   const today = new Date()
@@ -140,9 +142,9 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
       case 'month':
         return <MonthView days={days} month={today} active={false} onPickDay={() => {}} t={t} />
       case 'week':
-        return <WeekView rows={rows} weekStart={new Date(today.getTime() - 6 * 86_400_000)} active={false} compact t={t} />
+        return <WeekView rows={rows} weekStart={new Date(today.getTime() - 6 * 86_400_000)} active={false} compact onOpenSession={sessionsService !== undefined ? id => sessionsService.open(id) : undefined} t={t} />
       case 'day':
-        return <DayView rows={rows} date={todayKey} active={false} compact t={t} />
+        return <DayView rows={rows} date={todayKey} active={false} compact onOpenSession={sessionsService !== undefined ? id => sessionsService.open(id) : undefined} t={t} />
     }
   }
 

@@ -12,7 +12,7 @@
 
 import { z } from 'zod'
 import type { ProjectionDefinition } from '@deepseek-ai/dsh-session-projection'
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import type { CalendarValue } from './types.ts'
 import type { Config } from './config.ts'
 import {

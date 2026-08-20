@@ -27,7 +27,7 @@
  * @module dsh-calendar/activity
  */
 
-import type { SessionEvent } from '@deepseek-ai/dsh-session'
+import type { SessionEvent } from '@deepseek-ai/dsh-session/types'
 import type { CalendarDayBucket, CalendarInterval } from './types.ts'
 import type { Config } from './config.ts'
 

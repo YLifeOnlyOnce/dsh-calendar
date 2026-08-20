@@ -43,6 +43,10 @@ export function apply(ctx: ClientContext): void {
 
   const t = ctx.locale.bind(NS)
 
+  // The host-side dsh-session type merge shadows `ctx.sessions` in this mixed
+  // program; at runtime the client sessions service exposes `open()`.
+  const sessions = ctx.sessions as unknown as { open: (id: string) => void }
+
   ctx.slots.inject('settings.section', () => ctx.slots.register({
     name: 'settings.section',
     id: 'calendar',
@@ -50,6 +54,7 @@ export function apply(ctx: ClientContext): void {
     order: 40,
     label: () => t('nav'),
     locale: NS,
+    inject: () => ({ sessions }),
   }, CalendarSection))
 
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
@@ -58,5 +63,6 @@ export function apply(ctx: ClientContext): void {
     // After the built-in overlay entries; the layer is additive.
     order: 100,
     locale: NS,
+    inject: () => ({ sessions }),
   }, CardOverlay))
 }

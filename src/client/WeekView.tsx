@@ -22,6 +22,8 @@ export interface WeekViewProps {
   active: boolean
   /** Compact card sizing (main-UI cards); default is the full settings view. */
   compact?: boolean
+  /** Open a session (drill into the conversation). */
+  onOpenSession?: (sessionId: string) => void
   t: Translator
 }
 
@@ -48,6 +50,7 @@ interface LaneBar {
   hue: number
   title: string
   text: string
+  sessionId: string
   running: boolean
 }
 
@@ -60,7 +63,7 @@ interface WeekColumn {
   activeMs: number
 }
 
-export function WeekView({ rows, weekStart, active, compact = false, t }: WeekViewProps): ReactNode {
+export function WeekView({ rows, weekStart, active, compact = false, onOpenSession, t }: WeekViewProps): ReactNode {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
   const hourH = compact ? HOUR_H_COMPACT : HOUR_H
@@ -105,6 +108,7 @@ export function WeekView({ rows, weekStart, active, compact = false, t }: WeekVi
             text: seg.turns === 0
               ? `${session.title} · ${hhmm(seg.start)}`
               : `${session.title} · ${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${seg.turns}t`,
+            sessionId: id,
             running: session.running,
           })
         }
@@ -168,6 +172,7 @@ export function WeekView({ rows, weekStart, active, compact = false, t }: WeekVi
                   }}
                   onMouseEnter={e => showTip(bar.text, e.clientX, e.clientY)}
                   onMouseLeave={() => setTip(null)}
+                  onClick={onOpenSession !== undefined ? () => onOpenSession(bar.sessionId) : undefined}
                 />
               ))}
               {col.isToday && (
