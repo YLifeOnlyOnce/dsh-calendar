@@ -18,7 +18,8 @@ export const CALENDAR_CSS = `
   --dsh-cal-border: var(--dsw-alias-border-l2, #262b33);
   --dsh-cal-text: var(--dsw-alias-label-primary, #e6e9ee);
   --dsh-cal-muted: var(--dsw-alias-label-secondary, #8b93a1);
-  --dsh-cal-accent: var(--dsw-alias-brand-primary, #4d7cfe);
+  /* brand blue, NOT --dsw-alias-brand-primary (near-white in light / near-black in dark) */
+  --dsh-cal-accent: var(--dsw-alias-brand-primary-new-colorprimary-new-color, #4d7cfe);
   --dsh-cal-green: var(--dsw-alias-state-success-primary, #6ee7b7);
   --dsh-cal-red: var(--dsw-alias-state-error-primary, #f87171);
   --dsh-cal-amber: var(--dsw-alias-state-warn-primary, #fbbf24);
@@ -160,7 +161,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-sesslabel .run { color: var(--dsh-cal-green); font-size: 9px; animation: dsh-cal-pulse 1.6s ease-in-out infinite; }
 .dsh-cal-track { position: relative; height: 14px; margin: 2px 0; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); }
 .dsh-cal-sessrow + .dsh-cal-sessrow .dsh-cal-track { background: color-mix(in srgb, var(--dsh-cal-text) 7%, transparent); }
-.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
+.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 60%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
 .dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }
 .dsh-cal-nowline { position: absolute; top: 20px; bottom: 0; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
