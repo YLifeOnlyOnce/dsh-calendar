@@ -71,7 +71,9 @@ Restart `dsh web`, then open **Settings → 📅 Calendar**.
 
 ## Demo preview
 
-No live harness needed to preview the visuals — the repo ships a demo page with rich sample data (dark/light switchable):
+▶️ **Live demo:** [open the showcase page](https://htmlpreview.github.io/?https://raw.githubusercontent.com/YLifeOnlyOnce/dsh-calendar/main/docs/showcase.html) — hero banner, four views, and the main-UI cards, ready to screenshot.
+
+No live harness needed to preview the visuals locally either — the repo ships a demo page with rich sample data (dark/light switchable):
 
 ```sh
 pnpm demo:build && open docs/demo.html

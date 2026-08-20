@@ -71,7 +71,9 @@ dsh plugin --profile web add dsh-usage-calendar
 
 ## 演示预览
 
-不需要真实 harness 就能预览效果 —— 仓库自带一个用丰富示例数据的演示页（可切换亮/暗）：
+▶️ **在线演示：** [打开展示页](https://htmlpreview.github.io/?https://raw.githubusercontent.com/YLifeOnlyOnce/dsh-calendar/main/docs/showcase.html) —— hero banner、四个视图与主界面卡片，可直接截图。
+
+本地预览也不需要真实 harness —— 仓库自带一个用丰富示例数据的演示页（可切换亮/暗）：
 
 ```sh
 pnpm demo:build && open docs/demo.html
