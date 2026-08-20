@@ -46,10 +46,11 @@ You use DeepSeek Harness every day — dozens of sessions, background jobs, sche
 | 📅 **7-day timeline** | Seven columns, one day each, a vertical 24-hour timeline. Every session keeps its own color, so you can trace one task across days |
 | ⏱️ **Day timeline** | 24-hour Gantt axis by workspace → session. Turns merge into **task segments** — one user prompt opens a task, the work that follows joins it, one bar per task |
 | 🗂️ **Month grid** | Classic calendar with per-day heat bars and totals |
-| 🃏 **Main-UI cards** | Draggable mini cards (stats / year / 7-day / day / month) float over the main interface — move, collapse, or close them; pick which ones show in Settings |
+| 🃏 **Main-UI cards** | Draggable mini cards (stats / year / 7-day / day / month) float over the main interface — move, collapse, or close them; pick which ones show in Settings. Frosted translucent cards with soft shadows, so they sit lightly on top of your work |
+| 🏷️ **Workspace headers** | Timeline rows carry a folder icon, a glowing accent bar, and a pill badge with session count + active time — at a glance, per workspace |
 | 🖱️ **Drill through** | Click any timeline bar to **open the actual conversation** |
 | 📊 **Stats strip** | Active time / sessions / turns / tool calls for the selected range, with count-up numbers |
-| 🎨 **Theme-aware** | Follows the harness theme — light and dark, automatically |
+| 🎨 **Theme-aware** | Follows the harness theme — light and dark, automatically; bars and heat use the real brand blue in both themes |
 | ✨ **Animations** | Gentle entry effects and a decrypt-reveal headline — nothing janky, nothing in the way |
 | 🕐 **History, out of the box** | Past sessions are folded and cached at startup — last month's activity is visible without opening anything |
 
