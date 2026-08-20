@@ -27,6 +27,8 @@ export const CALENDAR_CSS = `
   --dsh-cal-gap: 3px;
   color: var(--dsh-cal-text);
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-width: 0;
+  max-width: 100%;
 }
 .dsh-cal-root * { box-sizing: border-box; }
 
@@ -103,7 +105,8 @@ export const CALENDAR_CSS = `
 .dsh-cal-monthcell .heatbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--dsh-cal-accent); opacity: 0.7; }
 
 /* ---- day view (Gantt timeline) ---- */
-.dsh-cal-day { overflow-x: auto; }
+.dsh-cal-viewport { min-width: 0; max-width: 100%; }
+.dsh-cal-day { overflow-x: auto; max-width: 100%; }
 .dsh-cal-daycontent { position: relative; min-width: 960px; }
 .dsh-cal-axis { position: relative; height: 20px; margin-bottom: 2px; }
 .dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 0; }
@@ -122,7 +125,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-nowline::before { content: ''; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--dsh-cal-red); box-shadow: 0 0 8px var(--dsh-cal-red); }
 
 /* ---- week view (7 columns) ---- */
-.dsh-cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; min-width: 640px; overflow-x: auto; }
+.dsh-cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; min-width: 640px; overflow-x: auto; max-width: 100%; }
 .dsh-cal-wcol { display: flex; flex-direction: column; gap: 4px; }
 .dsh-cal-wday { text-align: center; font-size: 11px; font-weight: 600; color: var(--dsh-cal-text); }
 .dsh-cal-wday .sub { font-size: 10px; color: var(--dsh-cal-muted); font-weight: 400; }

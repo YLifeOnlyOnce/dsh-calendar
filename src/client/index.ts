@@ -21,8 +21,8 @@ import { CardOverlay } from './CardOverlay.tsx'
 import { CALENDAR_CSS } from './calendar.css.ts'
 import { en, NS, zh } from './locales.ts'
 
-/** Required services: the slots registry (registrations) and the locale service. */
-export const inject = ['slots', 'locale']
+/** Required services: slots, locale, and the session opener used by calendar cards. */
+export const inject = ['slots', 'locale', 'sessions']
 
 /**
  * Client plugin body: inject the stylesheet, register the dictionaries, and
