@@ -131,12 +131,16 @@ export const CALENDAR_CSS = `
 .dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 3px; }
 .dsh-cal-axis .tick::after { content: ''; position: absolute; left: 50%; top: 11px; height: 5px; width: 1px; background: var(--dsh-cal-border); }
 
-/* workspace header row: spans the full width so the name and stats show fully */
+/* workspace header row: sticky + wider than the label column so the full
+   name and stats stay visible while the timeline scrolls */
 .dsh-cal-wsrow { border-top: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent); }
 .dsh-cal-wslabel {
+  position: sticky; left: 0; z-index: 6;
+  width: 280px;
   display: flex; align-items: center; gap: 8px;
   padding: 6px 10px;
-  background: color-mix(in srgb, var(--dsh-cal-text) 3.5%, transparent);
+  background: var(--dsw-alias-bg-layer-2, #12151a);
+  border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--dsh-cal-text) 7%, transparent);
 }
 .dsh-cal-wslabel .wsbar { width: 3px; height: 13px; border-radius: 2px; background: var(--dsh-cal-accent); flex-shrink: 0; }
@@ -227,6 +231,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 110px; }
 .dsh-cal-card .dsh-cal-sesslabel .sessname { font-size: 10px; }
 .dsh-cal-card .dsh-cal-wslabel .wsname { font-size: 11px; }
+.dsh-cal-card .dsh-cal-wslabel { width: var(--dsh-cal-label-w); }
 .dsh-cal-card .dsh-cal-wslabel, .dsh-cal-card .dsh-cal-sesslabel { padding: 2px 6px; }
 .dsh-cal-card .dsh-cal-axis .tick { font-size: 8px; }
 .dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
