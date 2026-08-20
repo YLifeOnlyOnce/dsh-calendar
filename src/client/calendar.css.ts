@@ -177,7 +177,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-sesslabel .run { color: var(--dsh-cal-green); font-size: 9px; animation: dsh-cal-pulse 1.6s ease-in-out infinite; }
 .dsh-cal-track { position: relative; height: 14px; margin: 2px 0; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); }
 .dsh-cal-sessrow + .dsh-cal-sessrow .dsh-cal-track { background: color-mix(in srgb, var(--dsh-cal-text) 7%, transparent); }
-.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 60%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
+.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: color-mix(in srgb, var(--dsh-cal-accent) 58%, transparent); transform-origin: left; cursor: pointer; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
 .dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }
 .dsh-cal-nowline { position: absolute; top: 20px; bottom: 0; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
@@ -200,8 +200,12 @@ export const CALENDAR_CSS = `
 /* ---- main-UI floating cards (shell.overlay) ---- */
 .dsh-cal-cardlayer { position: fixed; inset: 0; pointer-events: none; z-index: 500; }
 .dsh-cal-card {
-  position: absolute; pointer-events: auto; background: var(--dsh-cal-card-raised);
-  border: 1px solid var(--dsh-cal-border); border-radius: 12px; box-shadow: var(--dsh-cal-shadow);
+  position: absolute; pointer-events: auto;
+  background: color-mix(in srgb, var(--dsh-cal-card-raised) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--dsh-cal-border); border-radius: 12px;
+  box-shadow: 0 2px 10px color-mix(in srgb, #000 20%, transparent);
   max-width: 420px; padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px;
 }
 .dsh-cal-cardhead { display: flex; align-items: center; gap: 6px; }
@@ -244,10 +248,19 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
 .dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
 .dsh-cal-daybox.compact { --dsh-cal-label-w: 190px; }
-.dsh-cal-daybox.compact .dsh-cal-wslabel { width: var(--dsh-cal-label-w); gap: 5px; padding: 5px 8px; }
-.dsh-cal-daybox.compact .dsh-cal-wslabel .wsbar { width: 3px; height: 13px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel {
+  width: var(--dsh-cal-label-w); gap: 5px; padding: 5px 8px;
+  background: color-mix(in srgb, var(--dsh-cal-card-raised) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.dsh-cal-daybox.compact .dsh-cal-sesslabel {
+  background: color-mix(in srgb, var(--dsh-cal-card-raised) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 7%, transparent);
+}
+.dsh-cal-daybox.compact .dsh-cal-wslabel .wsbar { width: 3px; height: 13px; box-shadow: none; }
 .dsh-cal-daybox.compact .dsh-cal-wslabel .wsicon { width: 10px; height: 10px; }
-.dsh-cal-daybox.compact .dsh-cal-wslabel .wscount { font-size: 9px; padding: 0 6px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel .wscount { font-size: 9px; padding: 0 6px; background: color-mix(in srgb, var(--dsh-cal-accent) 8%, transparent); border-color: color-mix(in srgb, var(--dsh-cal-accent) 20%, transparent); }
 .dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
 .dsh-cal-card .dsh-cal-stat .value { font-size: 15px; }
 
