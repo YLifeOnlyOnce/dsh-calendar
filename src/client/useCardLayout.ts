@@ -46,7 +46,6 @@ function defaultPositions(): Record<CardId, CardPosition> {
 
 function readCards(): StoredCards {
   const positions = defaultPositions()
-  const visible = [...DEFAULT_VISIBLE]
   const collapsed: CardId[] = []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -58,18 +57,21 @@ function readCards(): StoredCards {
           if (p !== undefined && Number.isFinite(p.x) && Number.isFinite(p.y)) positions[id] = p
         }
       }
+      const validVisible = (id: CardId | undefined): id is CardId => id !== undefined && CARD_IDS.includes(id)
+      const collapsedValid = Array.isArray(parsed.collapsed)
+        ? parsed.collapsed.filter(validVisible)
+        : []
+      // `visible` is authoritative when present — even an empty array (the
+      // user closed every card) must not fall back to defaults.
       if (Array.isArray(parsed.visible)) {
-        const merged = [...DEFAULT_VISIBLE]
-        for (const id of parsed.visible) {
-          if (CARD_IDS.includes(id as CardId) && !merged.includes(id as CardId)) merged.push(id as CardId)
-        }
-        return { positions, visible: merged, collapsed: Array.isArray(parsed.collapsed) ? parsed.collapsed.filter((c): c is CardId => CARD_IDS.includes(c as CardId)) : [] }
+        return { positions, visible: parsed.visible.filter(validVisible), collapsed: collapsedValid }
       }
+      return { positions, visible: [...DEFAULT_VISIBLE], collapsed: collapsedValid }
     }
   } catch {
     // Storage unavailable — defaults hold.
   }
-  return { positions, visible, collapsed }
+  return { positions, visible: [...DEFAULT_VISIBLE], collapsed }
 }
 
 export interface CardLayout {
@@ -83,12 +85,14 @@ export interface CardLayout {
 }
 
 /** Layout-changed broadcast: the Settings page and the main-UI overlay are
- * separate React trees, so every mutation notifies peers to re-read storage. */
+ * separate React trees, so every committed mutation notifies peers. The event
+ * carries the committed state — peers must NOT re-read localStorage, because
+ * the write lands in the same commit's effect, one tick later. */
 const CHANGED_EVENT = 'dsh-calendar:cards-changed'
 
-function broadcast(): void {
+function broadcast(cards: StoredCards): void {
   try {
-    window.dispatchEvent(new CustomEvent(CHANGED_EVENT))
+    window.dispatchEvent(new CustomEvent(CHANGED_EVENT, { detail: cards }))
   } catch {
     // Non-browser context: nothing to notify.
   }
@@ -98,19 +102,25 @@ function broadcast(): void {
 export function useCardLayout(): CardLayout {
   const [cards, setCards] = useState<StoredCards>(readCards)
 
-  // Peers (the Settings page and the overlay) re-read storage on change.
+  // Peers apply the committed state carried by the event.
   useEffect(() => {
-    const onChanged = (): void => setCards(readCards())
+    const onChanged = (e: Event): void => {
+      const detail = (e as CustomEvent<StoredCards>).detail
+      if (detail !== undefined) setCards(detail)
+    }
     window.addEventListener(CHANGED_EVENT, onChanged)
     return () => window.removeEventListener(CHANGED_EVENT, onChanged)
   }, [])
 
+  // Persist AND notify peers in the same commit: storage first, then the
+  // event with this exact committed value.
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cards))
     } catch {
       // Quota/private-mode: keep in memory.
     }
+    broadcast(cards)
   }, [cards])
 
   const setPosition = useCallback((id: CardId, x: number, y: number) => {
@@ -118,7 +128,6 @@ export function useCardLayout(): CardLayout {
       ...prev,
       positions: { ...prev.positions, [id]: { x, y } },
     }))
-    broadcast()
   }, [])
 
   const toggleVisible = useCallback((id: CardId) => {
@@ -128,7 +137,6 @@ export function useCardLayout(): CardLayout {
         : [...prev.visible, id]
       return { ...prev, visible }
     })
-    broadcast()
   }, [])
 
   const toggleCollapsed = useCallback((id: CardId) => {
@@ -138,12 +146,10 @@ export function useCardLayout(): CardLayout {
         : [...prev.collapsed, id]
       return { ...prev, collapsed }
     })
-    broadcast()
   }, [])
 
   const reset = useCallback(() => {
     setCards({ positions: defaultPositions(), visible: [...DEFAULT_VISIBLE], collapsed: [] })
-    broadcast()
   }, [])
 
   return {

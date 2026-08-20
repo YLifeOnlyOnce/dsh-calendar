@@ -9,7 +9,7 @@
  * @module dsh-calendar/client/CardOverlay
  */
 
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import type { ReactNode } from 'react'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
@@ -88,20 +88,23 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
   const sessions = useSessions(s => s)
   const layout = useCardLayout()
 
-  const rows: SessionRow[] = []
-  for (const id of sessions.ids) {
-    const row = sessions.byId[id]
-    if (row === undefined) continue
-    rows.push({
-      id,
-      title: row.displayTitle,
-      cwd: row.cwd ?? '',
-      value: row.projectionValues?.['calendar'],
-      running: row.running,
-    })
-  }
-  const days = aggregateDays(rows)
-  const hasData = rows.some(r => r.value !== undefined)
+  const rows = useMemo<SessionRow[]>(() => {
+    const out: SessionRow[] = []
+    for (const id of sessions.ids) {
+      const row = sessions.byId[id]
+      if (row === undefined) continue
+      out.push({
+        id,
+        title: row.displayTitle,
+        cwd: row.cwd ?? '',
+        value: row.projectionValues?.['calendar'],
+        running: row.running,
+      })
+    }
+    return out
+  }, [sessions])
+  const days = useMemo(() => aggregateDays(rows), [rows])
+  const hasData = useMemo(() => rows.some(r => r.value !== undefined), [rows])
   const today = new Date()
   const todayKey = dateKey(today)
 
