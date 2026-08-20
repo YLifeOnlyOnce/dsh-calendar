@@ -38,6 +38,13 @@ export const zh = {
   'day.timeline': '当日时间线',
   'empty.title': '还没有活动数据',
   'empty.desc': '当 DeepSeek 开始执行任务后，这里会显示它的使用日程',
+  'cards.title': '主界面卡片',
+  'cards.tip': '勾选要显示在主界面上的小卡片（可拖拽移动、可折叠）',
+  'card.stats': '统计',
+  'card.year': '年度热力图',
+  'card.week': '7天时间线',
+  'card.day': '日视图',
+  'card.month': '月历',
 } as const
 
 /** English dictionary, key-identical to the Chinese source of truth. */
@@ -75,6 +82,13 @@ export const en: Record<CalendarKey, string> = {
   'day.timeline': 'Timeline',
   'empty.title': 'No activity yet',
   'empty.desc': 'Once DeepSeek starts working, its usage calendar appears here',
+  'cards.title': 'Main-UI cards',
+  'cards.tip': 'Cards floating over the main interface (draggable, collapsible)',
+  'card.stats': 'Stats',
+  'card.year': 'Year heatmap',
+  'card.week': '7-day',
+  'card.day': 'Day',
+  'card.month': 'Month',
 }
 
 /** Key set of the calendar dictionaries. */

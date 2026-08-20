@@ -20,13 +20,15 @@ export interface WeekViewProps {
   /** First day of the 7-day window. */
   weekStart: Date
   active: boolean
+  /** Compact card sizing (main-UI cards); default is the full settings view. */
+  compact?: boolean
   t: Translator
 }
 
-/** Vertical pixels per hour. */
+/** Vertical pixels per hour (full view). */
 const HOUR_H = 14
-/** Column track height for 24 hours. */
-const DAY_H = 24 * HOUR_H
+/** Compact pixels per hour (main-UI card). */
+const HOUR_H_COMPACT = 5
 /** Lane width per concurrent session within a column. */
 const LANE_W = 10
 
@@ -58,9 +60,11 @@ interface WeekColumn {
   activeMs: number
 }
 
-export function WeekView({ rows, weekStart, active, t }: WeekViewProps): ReactNode {
+export function WeekView({ rows, weekStart, active, compact = false, t }: WeekViewProps): ReactNode {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
+  const hourH = compact ? HOUR_H_COMPACT : HOUR_H
+  const dayH = 24 * hourH
 
   const today = dateKey(new Date())
   const columns = useMemo<WeekColumn[]>(() => {
@@ -94,8 +98,8 @@ export function WeekView({ rows, weekStart, active, t }: WeekViewProps): ReactNo
           const startMin = minutesOf(iv.start)
           const endMin = Math.min(minutesOf(iv.end), 24 * 60)
           bars.push({
-            top: (startMin / 1440) * DAY_H,
-            height: Math.max(iv.kind === 'prompt' ? 4 : 3, ((endMin - startMin) / 1440) * DAY_H),
+            top: (startMin / 1440) * dayH,
+            height: Math.max(iv.kind === 'prompt' ? 3 : 2, ((endMin - startMin) / 1440) * dayH),
             hue: sessionHue(id),
             title: session.title,
             text: iv.kind === 'prompt'
@@ -146,10 +150,10 @@ export function WeekView({ rows, weekStart, active, t }: WeekViewProps): ReactNo
               {col.dowLabel}
               <span className="sub"> {col.dayLabel}</span>
             </div>
-            <div className="dsh-cal-wtrack" style={{ height: DAY_H }}>
+            <div className="dsh-cal-wtrack" style={{ height: dayH }}>
               {[0, 3, 6, 9, 12, 15, 18, 21].map(h => (
-                <div key={h} className="dsh-cal-whour" style={{ top: (h / 24) * DAY_H }}>
-                  <span className="dsh-cal-whourlabel">{h}:00</span>
+                <div key={h} className="dsh-cal-whour" style={{ top: (h / 24) * dayH }}>
+                  {!compact && <span className="dsh-cal-whourlabel">{h}:00</span>}
                 </div>
               ))}
               {col.bars.map((bar, i) => (
@@ -157,7 +161,7 @@ export function WeekView({ rows, weekStart, active, t }: WeekViewProps): ReactNo
                   key={i}
                   className={`dsh-cal-wbar${bar.running ? ' running' : ''}`}
                   style={{
-                    left: 22 + (i % 8) * LANE_W,
+                    left: 22 + (i % 8) * (compact ? 4 : LANE_W),
                     top: bar.top,
                     height: bar.height,
                     background: `hsl(${bar.hue} 70% 62%)`,
@@ -167,7 +171,7 @@ export function WeekView({ rows, weekStart, active, t }: WeekViewProps): ReactNo
                 />
               ))}
               {col.isToday && (
-                <div className="dsh-cal-nowline" style={{ top: (minutesOf(nowMs) / 1440) * DAY_H, left: 0, right: 0, bottom: 'auto', height: 2 }} />
+                <div className="dsh-cal-nowline" style={{ top: (minutesOf(nowMs) / 1440) * dayH, left: 0, right: 0, bottom: 'auto', height: 2 }} />
               )}
             </div>
             <div style={{ fontSize: 10, color: 'var(--dsh-cal-muted)', textAlign: 'center' }}>

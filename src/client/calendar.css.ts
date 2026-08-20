@@ -135,6 +135,67 @@ export const CALENDAR_CSS = `
 
 .dsh-cal-empty { color: var(--dsh-cal-muted); font-size: 13px; text-align: center; padding: 40px 0; }
 
+/* ---- main-UI floating cards (shell.overlay) ---- */
+.dsh-cal-cardlayer { position: fixed; inset: 0; pointer-events: none; z-index: 500; }
+.dsh-cal-card {
+  position: absolute; pointer-events: auto; background: var(--dsh-cal-card-raised);
+  border: 1px solid var(--dsh-cal-border); border-radius: 12px; box-shadow: var(--dsh-cal-shadow);
+  max-width: 420px; padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 6px;
+}
+.dsh-cal-cardhead { display: flex; align-items: center; gap: 6px; }
+.dsh-cal-cardhandle {
+  cursor: grab; color: var(--dsh-cal-muted); font-size: 12px; padding: 2px 4px; border-radius: 6px;
+  user-select: none; touch-action: none; transition: color 0.15s ease, background 0.15s ease;
+}
+.dsh-cal-cardhandle:hover { color: var(--dsh-cal-accent); background: var(--dsh-cal-hover); }
+.dsh-cal-cardhandle:active { cursor: grabbing; }
+.dsh-cal-cardtitle { font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsh-cal-cardbtns { display: flex; gap: 2px; }
+.dsh-cal-cardbtn {
+  background: transparent; border: none; color: var(--dsh-cal-muted); cursor: pointer;
+  font-size: 12px; padding: 1px 6px; border-radius: 6px; transition: all 0.15s ease;
+}
+.dsh-cal-cardbtn:hover { color: var(--dsh-cal-text); background: var(--dsh-cal-hover); }
+.dsh-cal-cardbody { overflow: auto; max-height: 340px; }
+.dsh-cal-cardstats { display: flex; gap: 8px; }
+.dsh-cal-cardstats .cell {
+  flex: 1; display: flex; flex-direction: column; gap: 2px; background: var(--dsh-cal-card);
+  border: 1px solid var(--dsh-cal-border); border-radius: 8px; padding: 6px 8px;
+}
+.dsh-cal-cardstats .label { font-size: 10px; color: var(--dsh-cal-muted); }
+.dsh-cal-cardstats b { font-size: 14px; font-variant-numeric: tabular-nums; }
+
+/* compact content sizing inside cards */
+.dsh-cal-card .dsh-cal-cell { width: 6px; height: 6px; }
+.dsh-cal-card .dsh-cal-grid { gap: 1px; }
+.dsh-cal-card .dsh-cal-months { gap: 1px; margin-bottom: 2px; }
+.dsh-cal-card .dsh-cal-months span { font-size: 7px; width: 6px; }
+.dsh-cal-card .dsh-cal-weekdays span { font-size: 8px; height: 6px; line-height: 6px; }
+.dsh-cal-card .dsh-cal-legend { font-size: 9px; margin-top: 4px; }
+.dsh-cal-card .dsh-cal-week { min-width: 0; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.dsh-cal-card .dsh-cal-wcol { gap: 2px; }
+.dsh-cal-card .dsh-cal-wtrack { border-radius: 6px; }
+.dsh-cal-card .dsh-cal-wday { font-size: 9px; }
+.dsh-cal-card .dsh-cal-month { gap: 3px; }
+.dsh-cal-card .dsh-cal-monthcell { min-height: 34px; padding: 3px 5px; border-radius: 7px; }
+.dsh-cal-card .dsh-cal-monthcell .amt { font-size: 9px; margin-top: 1px; }
+.dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
+.dsh-cal-card .dsh-cal-day { max-width: 400px; }
+.dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
+.dsh-cal-card .dsh-cal-sessname { width: 110px; font-size: 10px; }
+.dsh-cal-card .dsh-cal-wsname { font-size: 11px; }
+.dsh-cal-card .dsh-cal-wsgroup { margin-bottom: 6px; }
+.dsh-cal-card .dsh-cal-axis .tick { font-size: 8px; }
+.dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
+.dsh-cal-card .dsh-cal-stat .value { font-size: 15px; }
+
+/* ---- settings: main-UI card selection ---- */
+.dsh-cal-cardsel { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--dsh-cal-border); }
+.dsh-cal-cardsel h3 { font-size: 13px; font-weight: 700; margin: 0 0 4px; }
+.dsh-cal-cardsel .tip { font-size: 11px; color: var(--dsh-cal-muted); margin-bottom: 8px; }
+.dsh-cal-cardsel .row { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; cursor: pointer; }
+.dsh-cal-cardsel .row input { accent-color: var(--dsh-cal-accent); }
+
 /* ---- tooltip ---- */
 .dsh-cal-tip {
   position: fixed; z-index: 9999; background: var(--dsh-cal-card-raised); border: 1px solid var(--dsh-cal-border);

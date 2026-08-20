@@ -23,6 +23,7 @@ import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
 import { WeekView } from './WeekView.tsx'
 import { DayView } from './DayView.tsx'
+import { useCardLayout, CARD_IDS } from './useCardLayout.ts'
 
 type View = 'year' | 'month' | 'week' | 'day'
 
@@ -107,6 +108,8 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
 
   const [view, setView] = useState<View>('year')
   const [cursor, setCursor] = useState(() => new Date())
+  // Main-UI floating cards (shared with the shell.overlay overlay).
+  const cards = useCardLayout()
 
   // Range-scoped stats for the stats cards.
   const stats = useMemo(() => {
@@ -202,6 +205,22 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
           <div>{t('empty.desc')}</div>
         </div>
       )}
+
+      {/* Main-UI card selection: which small cards float over the main interface. */}
+      <div className="dsh-cal-cardsel">
+        <h3>{t('cards.title')}</h3>
+        <div className="tip">{t('cards.tip')}</div>
+        {CARD_IDS.map(id => (
+          <label key={id} className="row">
+            <input
+              type="checkbox"
+              checked={cards.visible.includes(id)}
+              onChange={() => cards.toggleVisible(id)}
+            />
+            {t(`card.${id}` as CalendarKey)}
+          </label>
+        ))}
+      </div>
     </div>
   )
 }

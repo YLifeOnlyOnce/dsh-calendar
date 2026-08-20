@@ -19,11 +19,15 @@ export interface DayViewProps {
   rows: readonly SessionRow[]
   date: string
   active: boolean
+  /** Compact card sizing (main-UI cards); default is the full settings view. */
+  compact?: boolean
   t: Translator
 }
 
-/** Horizontal pixels per hour. */
+/** Horizontal pixels per hour (full view). */
 const HOUR_W = 40
+/** Compact pixels per hour (main-UI card). */
+const HOUR_W_COMPACT = 24
 /** Total axis width for 24 hours. */
 const DAY_W = 24 * HOUR_W
 
@@ -52,9 +56,11 @@ interface WorkspaceGroup {
   sessions: SessionDay[]
 }
 
-export function DayView({ rows, date, active, t }: DayViewProps): ReactNode {
+export function DayView({ rows, date, active, compact = false, t }: DayViewProps): ReactNode {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
+  const hourW = compact ? HOUR_W_COMPACT : HOUR_W
+  const dayW = 24 * hourW
 
   const groups = useMemo<WorkspaceGroup[]>(() => {
     const map = new Map<string, SessionDay[]>()
@@ -109,9 +115,9 @@ export function DayView({ rows, date, active, t }: DayViewProps): ReactNode {
   return (
     <div ref={rootRef} className="dsh-cal-day">
       <div className="dsh-cal-daycontent">
-        <div className="dsh-cal-axis" style={{ width: DAY_W }}>
+        <div className="dsh-cal-axis" style={{ width: dayW }}>
           {Array.from({ length: 25 }, (_, h) => (
-            <span key={h} className="tick" style={{ left: h * HOUR_W }}>{h === 24 ? '24:00' : `${h}:00`}</span>
+            <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
           ))}
         </div>
 
@@ -130,11 +136,11 @@ export function DayView({ rows, date, active, t }: DayViewProps): ReactNode {
                   {session.title}
                   {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
                 </div>
-                <div className="dsh-cal-track" style={{ width: DAY_W }}>
+                <div className="dsh-cal-track" style={{ width: dayW }}>
                   {session.intervals.map((iv, i) => {
                     const startMin = minutesOf(iv.start)
                     const endMin = Math.min(minutesOf(iv.end), 24 * 60)
-                    const width = Math.max(iv.kind === 'prompt' ? 4 : 3, ((endMin - startMin) / 1440) * DAY_W)
+                    const width = Math.max(iv.kind === 'prompt' ? 4 : 3, ((endMin - startMin) / 1440) * dayW)
                     const text = iv.kind === 'prompt'
                       ? `${hhmm(iv.start)} ${t('stats.prompts')}`
                       : `${hhmm(iv.start)} – ${hhmm(iv.end)} · ${fmtDuration(iv.end - iv.start)}`
@@ -142,7 +148,7 @@ export function DayView({ rows, date, active, t }: DayViewProps): ReactNode {
                       <div
                         key={i}
                         className={`dsh-cal-bar${iv.kind === 'prompt' ? ' prompt' : ''}${session.running && i === session.intervals.length - 1 ? ' running' : ''}`}
-                        style={{ left: (startMin / 1440) * DAY_W, width }}
+                        style={{ left: (startMin / 1440) * dayW, width }}
                         onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
                         onMouseLeave={() => setTip(null)}
                       />
@@ -155,7 +161,7 @@ export function DayView({ rows, date, active, t }: DayViewProps): ReactNode {
         ))}
 
         {isToday && (
-          <div className="dsh-cal-nowline" style={{ left: (minutesOf(nowMs) / 1440) * DAY_W }} />
+          <div className="dsh-cal-nowline" style={{ left: (minutesOf(nowMs) / 1440) * dayW }} />
         )}
       </div>
 
