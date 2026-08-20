@@ -142,10 +142,10 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compact])
 
-  // Ctrl/⌘ + wheel zoom (native listener so preventDefault works).
+  // Ctrl/⌘ + wheel zoom — cards too, matching the full view.
   useEffect(() => {
     const el = rootRef.current
-    if (el === null || compact) return
+    if (el === null) return
     const onWheel = (e: WheelEvent): void => {
       if (!e.ctrlKey && !e.metaKey) return
       e.preventDefault()
@@ -154,7 +154,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [compact])
+  }, [])
 
   const groups = useMemo<WorkspaceGroup[]>(() => {
     const map = new Map<string, SessionDay[]>()
@@ -218,14 +218,12 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
 
   return (
     <div className="dsh-cal-daybox">
-      {!compact && (
-        <div className="dsh-cal-daytools">
-          <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), 1 / ZOOM_STEP)} title={t('day.zoomOut')}>−</button>
-          <button type="button" className="dsh-cal-navbtn" onClick={fit}>{t('day.fit')}</button>
-          <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), ZOOM_STEP)} title={t('day.zoomIn')}>＋</button>
-          <span className="dsh-cal-scale">{hourW.toFixed(0)} px/h</span>
-        </div>
-      )}
+      <div className="dsh-cal-daytools">
+        <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), 1 / ZOOM_STEP)} title={t('day.zoomOut')}>−</button>
+        <button type="button" className="dsh-cal-navbtn" onClick={fit}>{t('day.fit')}</button>
+        <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), ZOOM_STEP)} title={t('day.zoomIn')}>＋</button>
+        <span className="dsh-cal-scale">{hourW.toFixed(0)} px/h</span>
+      </div>
 
       <div ref={rootRef} className="dsh-cal-day">
         <div className="dsh-cal-daycontent" style={{ width: contentW }}>

@@ -225,14 +225,9 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-monthcell { min-height: 34px; padding: 3px 5px; border-radius: 7px; }
 .dsh-cal-card .dsh-cal-monthcell .amt { font-size: 9px; margin-top: 1px; }
 .dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
-.dsh-cal-card .dsh-cal-day { max-width: 400px; }
 .dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
 .dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 190px; }
-.dsh-cal-card .dsh-cal-sesslabel .sessname { font-size: 10px; }
-.dsh-cal-card .dsh-cal-wslabel .wsname { font-size: 11px; }
 .dsh-cal-card .dsh-cal-wslabel { width: var(--dsh-cal-label-w); }
-.dsh-cal-card .dsh-cal-wslabel, .dsh-cal-card .dsh-cal-sesslabel { padding: 2px 6px; }
-.dsh-cal-card .dsh-cal-axis .tick { font-size: 8px; }
 .dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
 .dsh-cal-card .dsh-cal-stat .value { font-size: 15px; }
 
