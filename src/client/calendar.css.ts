@@ -107,39 +107,61 @@ export const CALENDAR_CSS = `
 .dsh-cal-monthcell .sub { font-size: 10px; color: var(--dsh-cal-muted); margin-top: 2px; }
 .dsh-cal-monthcell .heatbar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--dsh-cal-accent); opacity: 0.7; }
 
-/* ---- day view (Gantt timeline) ---- */
+/* ---- day view (Gantt timeline, two-column: sticky labels + scrolling track) ---- */
 .dsh-cal-viewport { min-width: 0; max-width: 100%; }
-.dsh-cal-daybox { min-width: 0; max-width: 100%; }
+.dsh-cal-daybox { min-width: 0; max-width: 100%; --dsh-cal-label-w: 168px; }
 .dsh-cal-daytools { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
 .dsh-cal-scale { font-size: 11px; color: var(--dsh-cal-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin-left: 4px; }
-.dsh-cal-day { overflow-x: auto; max-width: 100%; }
+.dsh-cal-day { overflow: auto; max-width: 100%; position: relative; }
 .dsh-cal-daycontent { position: relative; min-width: 0; }
-.dsh-cal-axis { position: relative; height: 20px; margin-bottom: 2px; }
-.dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 0; }
+
+/* shared hour gridlines behind every row (left of the label column) */
+.dsh-cal-gridlines { position: absolute; top: 20px; bottom: 0; left: var(--dsh-cal-label-w); pointer-events: none; z-index: 0; }
+.dsh-cal-gridlines span { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dsh-cal-text) 7%, transparent); }
+
+/* sticky hour axis */
+.dsh-cal-axis {
+  position: sticky; top: 0; z-index: 7;
+  display: grid; grid-template-columns: var(--dsh-cal-label-w) 1fr;
+  background: var(--dsw-alias-bg-layer-2, #12151a);
+  border-bottom: 1px solid var(--dsh-cal-border);
+}
+.dsh-cal-axislabel { font-size: 10px; color: var(--dsh-cal-muted); padding: 4px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsh-cal-axistrack { position: relative; height: 20px; }
+.dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 3px; }
 .dsh-cal-axis .tick::after { content: ''; position: absolute; left: 50%; top: 11px; height: 5px; width: 1px; background: var(--dsh-cal-border); }
-.dsh-cal-wsgroup { margin-bottom: 12px; }
-.dsh-cal-wsname {
-  font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); margin-bottom: 5px;
+
+/* workspace row: label column + empty track spacer */
+.dsh-cal-wsrow { border-top: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent); }
+.dsh-cal-wslabel {
+  position: sticky; left: 0; z-index: 6;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px;
+  background: var(--dsw-alias-bg-layer-2, #12151a);
+  border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent);
+}
+.dsh-cal-wslabel .wsname { font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsh-cal-wslabel .wscount { font-size: 10px; color: var(--dsh-cal-muted); white-space: nowrap; }
+.dsh-cal-wstrack { position: relative; height: 0; }
+
+/* session row: sticky label + track */
+.dsh-cal-sessrow { display: grid; grid-template-columns: var(--dsh-cal-label-w) 1fr; }
+.dsh-cal-sesslabel {
+  position: sticky; left: 0; z-index: 5;
   display: flex; align-items: center; gap: 6px;
-  position: sticky; left: 0; z-index: 5; padding-right: 10px;
-  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-2, #16191e) 88%, transparent);
+  padding: 2px 8px;
+  background: var(--dsw-alias-bg-layer-2, #12151a);
+  border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent);
 }
-.dsh-cal-wsname::before { content: ''; width: 3px; height: 12px; border-radius: 2px; background: var(--dsh-cal-accent); }
-.dsh-cal-sessrow { display: flex; align-items: center; margin-bottom: 3px; }
-.dsh-cal-sessname {
-  width: 150px; flex-shrink: 0; font-size: 11px; color: var(--dsh-cal-muted);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px;
-  position: sticky; left: 0; z-index: 4;
-  background: linear-gradient(90deg, var(--dsw-alias-bg-layer-2, #16191e) 88%, transparent);
-}
-.dsh-cal-sessname .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
-.dsh-cal-track { position: relative; height: 14px; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); border-radius: 4px; flex: 1; overflow: hidden; }
-.dsh-cal-trackgrid { position: absolute; inset: 0; pointer-events: none; }
-.dsh-cal-trackgrid span { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--dsh-cal-text) 8%, transparent); }
-.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.88; transform-origin: left; }
+.dsh-cal-sesslabel .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dsh-cal-sesslabel .sessname { flex: 1; font-size: 11px; color: var(--dsh-cal-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsh-cal-sesslabel .run { color: var(--dsh-cal-green); font-size: 9px; animation: dsh-cal-pulse 1.6s ease-in-out infinite; }
+.dsh-cal-track { position: relative; height: 14px; margin: 2px 0; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); }
+.dsh-cal-sessrow + .dsh-cal-sessrow .dsh-cal-track { background: color-mix(in srgb, var(--dsh-cal-text) 7%, transparent); }
+.dsh-cal-bar { position: absolute; top: 1px; bottom: 1px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
 .dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }
-.dsh-cal-nowline { position: absolute; top: -3px; bottom: -4px; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
+.dsh-cal-nowline { position: absolute; top: 20px; bottom: 0; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
 .dsh-cal-nowline::before { content: ''; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--dsh-cal-red); box-shadow: 0 0 8px var(--dsh-cal-red); }
 
 /* ---- week view (7 columns) ---- */
@@ -203,9 +225,10 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
 .dsh-cal-card .dsh-cal-day { max-width: 400px; }
 .dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
-.dsh-cal-card .dsh-cal-sessname { width: 110px; font-size: 10px; }
-.dsh-cal-card .dsh-cal-wsname { font-size: 11px; }
-.dsh-cal-card .dsh-cal-wsgroup { margin-bottom: 6px; }
+.dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 110px; }
+.dsh-cal-card .dsh-cal-sesslabel .sessname { font-size: 10px; }
+.dsh-cal-card .dsh-cal-wslabel .wsname { font-size: 11px; }
+.dsh-cal-card .dsh-cal-wslabel, .dsh-cal-card .dsh-cal-sesslabel { padding: 2px 6px; }
 .dsh-cal-card .dsh-cal-axis .tick { font-size: 8px; }
 .dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
 .dsh-cal-card .dsh-cal-stat .value { font-size: 15px; }

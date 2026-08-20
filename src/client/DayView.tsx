@@ -1,10 +1,16 @@
 /**
- * Day view: a zoomable 24-hour Gantt timeline of one day's activity. Sessions
- * group under their workspace; each session row shows its task segments and
- * prompt points positioned on the hour axis. The timeline fits the container
- * by default; zoom in/out with the toolbar buttons or Ctrl/⌘ + wheel (anchored
- * to the pointer), and "Fit" snaps back. A pulsing red now-line marks the
- * current time on today's view.
+ * Day view: a zoomable 24-hour Gantt timeline of one day's activity.
+ *
+ * Layout: one two-way scroll container with a fixed left label column
+ * (`grid-template-columns: 168px 1fr`) — workspace/session labels stay
+ * pinned (sticky + solid background) while the timeline scrolls
+ * horizontally, and the hour axis stays pinned to the top. Hour gridlines
+ * draw on a shared layer behind all rows, rows alternate lane tint, and a
+ * pulsing now-line spans the full height on today's view.
+ *
+ * Zoom: fits the container by default; toolbar buttons or Ctrl/⌘ + wheel
+ * zoom anchored to the pointer; "Fit" snaps back. Tick labels thin out at
+ * small scales so they never overlap.
  *
  * @module dsh-calendar/client/DayView
  */
@@ -27,6 +33,8 @@ export interface DayViewProps {
   t: Translator
 }
 
+/** Fixed label-column width (px). */
+const LABEL_W = 168
 /** Fallback pixels per hour before the first fit measurement. */
 const HOUR_W_FALLBACK = 40
 /** Compact pixels per hour (main-UI card — fixed, no zoom there). */
@@ -69,15 +77,18 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   const hourWRef = useRef(hourW)
   hourWRef.current = hourW
 
-  const dayW = 24 * hourW
+  /** Timeline track width for 24 hours. */
+  const trackW = 24 * hourW
+  /** Full content width including the label column. */
+  const contentW = LABEL_W + trackW
 
   const clamp = (v: number): number => Math.min(MAX_HOUR_W, Math.max(MIN_HOUR_W, v))
 
-  /** Fit the full 24h into the visible container width. */
+  /** Fit the full 24h into the visible timeline width. */
   const fit = (): void => {
     const el = rootRef.current
     if (el === null) return
-    const w = el.clientWidth
+    const w = el.clientWidth - LABEL_W
     if (w > 0) setHourW(clamp(w / 24))
     el.scrollLeft = 0
   }
@@ -87,17 +98,17 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
     const el = rootRef.current
     if (el === null) return
     const rect = el.getBoundingClientRect()
-    const anchorHours = (clientX - rect.left + el.scrollLeft) / hourWRef.current
+    const anchorHours = (clientX - rect.left + el.scrollLeft - LABEL_W) / hourWRef.current
     const next = clamp(hourWRef.current * factor)
     setHourW(next)
     requestAnimationFrame(() => {
       if (rootRef.current !== null) {
-        rootRef.current.scrollLeft = anchorHours * next - (clientX - rect.left)
+        rootRef.current.scrollLeft = anchorHours * next - (clientX - rect.left) + LABEL_W
       }
     })
   }
 
-  // Default fit: measure after mount.
+  // Default fit after mount.
   useEffect(() => {
     if (compact) return
     fit()
@@ -188,41 +199,52 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
           <span className="dsh-cal-scale">{hourW.toFixed(0)} px/h</span>
         </div>
       )}
+
       <div ref={rootRef} className="dsh-cal-day">
-        <div className="dsh-cal-daycontent">
-          <div className="dsh-cal-axis" style={{ width: dayW }}>
+        <div className="dsh-cal-daycontent" style={{ width: contentW }}>
+          {/* Shared hour gridlines behind every row. */}
+          <div className="dsh-cal-gridlines" aria-hidden="true">
             {hourTicks.map(h => (
-              <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
+              <span key={h} style={{ left: h * hourW }} />
             ))}
           </div>
 
+          {/* Sticky hour axis. */}
+          <div className="dsh-cal-axis">
+            <div className="dsh-cal-axislabel">{t('day.timeline')}</div>
+            <div className="dsh-cal-axistrack" style={{ width: trackW }}>
+              {hourTicks.map(h => (
+                <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
+              ))}
+            </div>
+          </div>
+
           {groups.map(group => (
-            <div key={group.name} className="dsh-cal-wsgroup">
-              <div className="dsh-cal-wsname">
-                {group.name}
-                <span style={{ fontSize: 11, color: 'var(--dsh-cal-muted)', fontWeight: 400 }}>
+            <div key={group.name} className="dsh-cal-wsrow">
+              {/* Sticky workspace label. */}
+              <div className="dsh-cal-wslabel">
+                <span className="wsname">{group.name}</span>
+                <span className="wscount">
                   {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(group.sessions.reduce((a, s) => a + s.activeMs, 0))}
                 </span>
               </div>
+              <div className="dsh-cal-wstrack" style={{ width: trackW }} />
+
               {group.sessions.map(session => (
                 <div key={session.id} className="dsh-cal-sessrow">
-                  <div className="dsh-cal-sessname" title={session.title}>
+                  {/* Sticky session label. */}
+                  <div className="dsh-cal-sesslabel" title={session.title}>
                     <span className="dot" style={{ background: `hsl(${sessionHue(session.id)} 70% 62%)` }} />
-                    {session.title}
-                    {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
+                    <span className="sessname">{session.title}</span>
+                    {session.running && <span className="run">●</span>}
                   </div>
-                  <div className="dsh-cal-track" style={{ width: dayW }}>
-                    <div className="dsh-cal-trackgrid" aria-hidden="true">
-                      {hourTicks.map(h => (
-                        <span key={h} style={{ left: h * hourW }} />
-                      ))}
-                    </div>
+                  <div className="dsh-cal-track" style={{ width: trackW }}>
                     {(() => {
                       const segments = mergeSegments(session.intervals)
                       return segments.map((seg, i) => {
                         const startMin = minutesOf(seg.start)
                         const endMin = Math.min(minutesOf(seg.end), 24 * 60)
-                        const width = Math.max(3, ((endMin - startMin) / 1440) * dayW)
+                        const width = Math.max(3, ((endMin - startMin) / 1440) * trackW)
                         const text = seg.turns === 0
                           ? `${hhmm(seg.start)} ${t('stats.prompts')}`
                           : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
@@ -230,7 +252,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                           <div
                             key={i}
                             className={`dsh-cal-bar${session.running && i === segments.length - 1 ? ' running' : ''}`}
-                            style={{ left: (startMin / 1440) * dayW, width }}
+                            style={{ left: (startMin / 1440) * trackW, width }}
                             onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
                             onMouseLeave={() => setTip(null)}
                             onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
@@ -247,7 +269,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
           ))}
 
           {isToday && (
-            <div className="dsh-cal-nowline" style={{ left: (minutesOf(nowMs) / 1440) * dayW }} />
+            <div className="dsh-cal-nowline" style={{ left: LABEL_W + (minutesOf(nowMs) / 1440) * trackW }} />
           )}
         </div>
       </div>
