@@ -8,7 +8,7 @@
 
 import { useMemo } from 'react'
 import { animate } from 'animejs'
-import type { CalendarValue } from '../types'
+import type { CalendarInterval, CalendarValue } from '../types'
 
 /** One session row's calendar-relevant facts. */
 export interface SessionRow {
@@ -57,6 +57,57 @@ export function sessionHue(id: string): number {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
   return h % 360
+}
+
+/**
+ * One merged task segment on a session's timeline: a user prompt opens it,
+ * and the following turns join it while their gaps stay under the merge
+ * threshold. `turns`/`prompts` count the merged intervals.
+ */
+export interface ActivitySegment {
+  start: number
+  end: number
+  turns: number
+  prompts: number
+}
+
+/** Default merge threshold: a gap between turns below this stays one task. */
+export const SEGMENT_GAP_MS = 5 * 60_000
+
+/**
+ * Merge a session's activity intervals into task segments. Rules:
+ * - A `prompt` point opens a new segment (each user input starts a task).
+ * - A `turn` joins the current segment when it starts within `gapMs` of the
+ *   segment's end (model turnaround gaps are part of the same task).
+ * - Anything else opens a new segment.
+ * Intervals are sorted by start first; prompt points have zero duration.
+ */
+export function mergeSegments(intervals: readonly CalendarInterval[], gapMs: number = SEGMENT_GAP_MS): ActivitySegment[] {
+  const sorted = [...intervals].sort((a, b) => a.start - b.start)
+  const segments: ActivitySegment[] = []
+  for (const iv of sorted) {
+    const last = segments[segments.length - 1]
+    if (last === undefined) {
+      segments.push({
+        start: iv.start,
+        end: iv.end,
+        turns: iv.kind === 'turn' ? 1 : 0,
+        prompts: iv.kind === 'prompt' ? 1 : 0,
+      })
+      continue
+    }
+    if (iv.kind === 'prompt') {
+      segments.push({ start: iv.start, end: iv.end, turns: 0, prompts: 1 })
+      continue
+    }
+    if (iv.start - last.end <= gapMs) {
+      last.end = Math.max(last.end, iv.end)
+      last.turns += 1
+      continue
+    }
+    segments.push({ start: iv.start, end: iv.end, turns: 1, prompts: 0 })
+  }
+  return segments
 }
 
 /** Aggregate session rows into a day map (empty map when no rows carry values). */

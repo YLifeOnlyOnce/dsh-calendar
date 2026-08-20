@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { Translator } from './locales.ts'
-import { dateKey, fmtDuration, sessionHue, type SessionRow } from './useCalendarData.ts'
+import { dateKey, fmtDuration, mergeSegments, sessionHue, type SessionRow } from './useCalendarData.ts'
 import type { CalendarInterval } from '../types'
 
 export interface WeekViewProps {
@@ -94,17 +94,17 @@ export function WeekView({ rows, weekStart, active, compact = false, t }: WeekVi
       let activeMs = 0
       ordered.forEach(([id, session], lane) => {
         activeMs += session.intervals.reduce((a, iv) => a + Math.max(0, iv.end - iv.start), 0)
-        for (const iv of session.intervals) {
-          const startMin = minutesOf(iv.start)
-          const endMin = Math.min(minutesOf(iv.end), 24 * 60)
+        for (const seg of mergeSegments(session.intervals)) {
+          const startMin = minutesOf(seg.start)
+          const endMin = Math.min(minutesOf(seg.end), 24 * 60)
           bars.push({
             top: (startMin / 1440) * dayH,
-            height: Math.max(iv.kind === 'prompt' ? 3 : 2, ((endMin - startMin) / 1440) * dayH),
+            height: Math.max(seg.turns === 0 ? 3 : 2, ((endMin - startMin) / 1440) * dayH),
             hue: sessionHue(id),
             title: session.title,
-            text: iv.kind === 'prompt'
-              ? `${session.title} · ${hhmm(iv.start)}`
-              : `${session.title} · ${hhmm(iv.start)} – ${hhmm(iv.end)} · ${fmtDuration(iv.end - iv.start)}`,
+            text: seg.turns === 0
+              ? `${session.title} · ${hhmm(seg.start)}`
+              : `${session.title} · ${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${seg.turns}t`,
             running: session.running,
           })
         }

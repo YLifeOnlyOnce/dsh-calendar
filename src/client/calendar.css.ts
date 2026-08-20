@@ -117,7 +117,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-track { position: relative; height: 14px; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); border-radius: 4px; flex: 1; }
 .dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.88; transform-origin: left; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
-.dsh-cal-bar.prompt { background: var(--dsh-cal-green); width: 4px; border-radius: 50%; }
+.dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }
 .dsh-cal-nowline { position: absolute; top: -3px; bottom: -4px; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
 .dsh-cal-nowline::before { content: ''; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--dsh-cal-red); box-shadow: 0 0 8px var(--dsh-cal-red); }
 

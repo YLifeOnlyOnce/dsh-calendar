@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { Translator } from './locales.ts'
-import { dateKey, fmtDuration, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
+import { dateKey, fmtDuration, mergeSegments, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
 import type { CalendarInterval } from '../types'
 
 export interface DayViewProps {
@@ -137,23 +137,28 @@ export function DayView({ rows, date, active, compact = false, t }: DayViewProps
                   {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
                 </div>
                 <div className="dsh-cal-track" style={{ width: dayW }}>
-                  {session.intervals.map((iv, i) => {
-                    const startMin = minutesOf(iv.start)
-                    const endMin = Math.min(minutesOf(iv.end), 24 * 60)
-                    const width = Math.max(iv.kind === 'prompt' ? 4 : 3, ((endMin - startMin) / 1440) * dayW)
-                    const text = iv.kind === 'prompt'
-                      ? `${hhmm(iv.start)} ${t('stats.prompts')}`
-                      : `${hhmm(iv.start)} – ${hhmm(iv.end)} · ${fmtDuration(iv.end - iv.start)}`
-                    return (
-                      <div
-                        key={i}
-                        className={`dsh-cal-bar${iv.kind === 'prompt' ? ' prompt' : ''}${session.running && i === session.intervals.length - 1 ? ' running' : ''}`}
-                        style={{ left: (startMin / 1440) * dayW, width }}
-                        onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
-                        onMouseLeave={() => setTip(null)}
-                      />
-                    )
-                  })}
+                  {(() => {
+                    const segments = mergeSegments(session.intervals)
+                    return segments.map((seg, i) => {
+                      const startMin = minutesOf(seg.start)
+                      const endMin = Math.min(minutesOf(seg.end), 24 * 60)
+                      const width = Math.max(3, ((endMin - startMin) / 1440) * dayW)
+                      const text = seg.turns === 0
+                        ? `${hhmm(seg.start)} ${t('stats.prompts')}`
+                        : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
+                      return (
+                        <div
+                          key={i}
+                          className={`dsh-cal-bar${session.running && i === segments.length - 1 ? ' running' : ''}`}
+                          style={{ left: (startMin / 1440) * dayW, width }}
+                          onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
+                          onMouseLeave={() => setTip(null)}
+                        >
+                          {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
+                        </div>
+                      )
+                    })
+                  })()}
                 </div>
               </div>
             ))}
