@@ -227,7 +227,7 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
 .dsh-cal-card .dsh-cal-day { max-width: 400px; }
 .dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
-.dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 110px; }
+.dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 190px; }
 .dsh-cal-card .dsh-cal-sesslabel .sessname { font-size: 10px; }
 .dsh-cal-card .dsh-cal-wslabel .wsname { font-size: 11px; }
 .dsh-cal-card .dsh-cal-wslabel { width: var(--dsh-cal-label-w); }

@@ -77,8 +77,8 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   const hourWRef = useRef(hourW)
   hourWRef.current = hourW
 
-  /** Label-column width: the CSS `--dsh-cal-label-w` (168 full view, 110 card). */
-  const labelW = compact ? 110 : LABEL_W
+  /** Label-column width: the CSS `--dsh-cal-label-w` (168 full view, 190 card). */
+  const labelW = compact ? 190 : LABEL_W
 
   /** Timeline track width for 24 hours. */
   const trackW = 24 * hourW
@@ -87,12 +87,37 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
 
   const clamp = (v: number): number => Math.min(MAX_HOUR_W, Math.max(MIN_HOUR_W, v))
 
-  /** Fit the full 24h into the visible timeline width. */
+  /** Fit the day into the visible timeline width. Cards fit the ACTIVE window
+   * (first → last activity, padded) so Q&A bars stay visible at card size;
+   * the full view fits all 24h (user zooms from there). */
   const fit = (): void => {
     const el = rootRef.current
     if (el === null) return
     const w = el.clientWidth - labelW
-    if (w > 0) setHourW(clamp(w / 24))
+    if (w <= 0) return
+    if (compact) {
+      let firstMin = Number.POSITIVE_INFINITY
+      let lastMin = Number.NEGATIVE_INFINITY
+      for (const group of groups) {
+        for (const s of group.sessions) {
+          for (const iv of s.intervals) {
+            const m = minutesOf(iv.start)
+            if (m < firstMin) firstMin = m
+            const e = minutesOf(iv.end)
+            if (e > lastMin) lastMin = e
+          }
+        }
+      }
+      if (Number.isFinite(firstMin) && lastMin - firstMin >= 30) {
+        const windowHours = Math.max(2, (lastMin - firstMin) / 60)
+        const next = clamp(w / windowHours)
+        setHourW(next)
+        // Scroll so the active window starts near the left (with a small pad).
+        el.scrollLeft = (firstMin / 1440) * 24 * next - 30
+        return
+      }
+    }
+    setHourW(clamp(w / 24))
     el.scrollLeft = 0
   }
 
@@ -251,7 +276,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                         return segments.map((seg, i) => {
                           const startMin = minutesOf(seg.start)
                           const endMin = Math.min(minutesOf(seg.end), 24 * 60)
-                          const width = Math.max(3, ((endMin - startMin) / 1440) * trackW)
+                          const width = Math.max(4, ((endMin - startMin) / 1440) * trackW)
                           const text = seg.turns === 0
                             ? `${hhmm(seg.start)} ${t('stats.prompts')}`
                             : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
