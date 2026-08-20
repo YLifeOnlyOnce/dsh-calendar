@@ -77,10 +77,13 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   const hourWRef = useRef(hourW)
   hourWRef.current = hourW
 
+  /** Label-column width: the CSS `--dsh-cal-label-w` (168 full view, 110 card). */
+  const labelW = compact ? 110 : LABEL_W
+
   /** Timeline track width for 24 hours. */
   const trackW = 24 * hourW
   /** Full content width including the label column. */
-  const contentW = LABEL_W + trackW
+  const contentW = labelW + trackW
 
   const clamp = (v: number): number => Math.min(MAX_HOUR_W, Math.max(MIN_HOUR_W, v))
 
@@ -88,7 +91,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   const fit = (): void => {
     const el = rootRef.current
     if (el === null) return
-    const w = el.clientWidth - LABEL_W
+    const w = el.clientWidth - labelW
     if (w > 0) setHourW(clamp(w / 24))
     el.scrollLeft = 0
   }
@@ -98,19 +101,18 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
     const el = rootRef.current
     if (el === null) return
     const rect = el.getBoundingClientRect()
-    const anchorHours = (clientX - rect.left + el.scrollLeft - LABEL_W) / hourWRef.current
+    const anchorHours = (clientX - rect.left + el.scrollLeft - labelW) / hourWRef.current
     const next = clamp(hourWRef.current * factor)
     setHourW(next)
     requestAnimationFrame(() => {
       if (rootRef.current !== null) {
-        rootRef.current.scrollLeft = anchorHours * next - (clientX - rect.left) + LABEL_W
+        rootRef.current.scrollLeft = anchorHours * next - (clientX - rect.left) + labelW
       }
     })
   }
 
-  // Default fit after mount.
+  // Default fit after mount — cards too, so a full day fits the card width.
   useEffect(() => {
-    if (compact) return
     fit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compact])
@@ -219,30 +221,34 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
             </div>
           </div>
 
-          {groups.map(group => (
-            <div key={group.name} className="dsh-cal-wsrow">
-              {/* Sticky workspace label. */}
-              <div className="dsh-cal-wslabel">
-                <span className="wsname">{group.name}</span>
-                <span className="wscount">
-                  {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(group.sessions.reduce((a, s) => a + s.activeMs, 0))}
-                </span>
-              </div>
+          {groups.map(group => {
+            const groupActive = group.sessions.reduce((a, s) => a + s.activeMs, 0)
+            return (
+              <div key={group.name} className="dsh-cal-wsrow">
+                {/* Workspace header row: spans the full width (may extend past
+                    the label column), so the name shows fully with stats. */}
+                <div className="dsh-cal-wslabel">
+                  <span className="wsbar" />
+                  <span className="wsname">{group.name}</span>
+                  <span className="wscount">
+                    {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(groupActive)}
+                  </span>
+                </div>
 
-              {group.sessions.map(session => (
-                <div key={session.id} className="dsh-cal-sessrow">
-                  {/* Sticky session label. */}
-                  <div className="dsh-cal-sesslabel" title={session.title}>
-                    <span className="dot" style={{ background: `hsl(${sessionHue(session.id)} 70% 62%)` }} />
-                    <span className="sessname">{session.title}</span>
-                    {session.running && <span className="run">●</span>}
-                  </div>
-                  <div className="dsh-cal-track" style={{ width: trackW }}>
-                    {(() => {
-                      const segments = mergeSegments(session.intervals)
-                      return segments.map((seg, i) => {
-                        const startMin = minutesOf(seg.start)
-                        const endMin = Math.min(minutesOf(seg.end), 24 * 60)
+                {group.sessions.map(session => (
+                  <div key={session.id} className="dsh-cal-sessrow">
+                    {/* Sticky session label. */}
+                    <div className="dsh-cal-sesslabel" title={session.title}>
+                      <span className="dot" style={{ background: `hsl(${sessionHue(session.id)} 70% 62%)` }} />
+                      <span className="sessname">{session.title}</span>
+                      {session.running && <span className="run">●</span>}
+                    </div>
+                    <div className="dsh-cal-track" style={{ width: trackW }}>
+                      {(() => {
+                        const segments = mergeSegments(session.intervals)
+                        return segments.map((seg, i) => {
+                          const startMin = minutesOf(seg.start)
+                          const endMin = Math.min(minutesOf(seg.end), 24 * 60)
                         const width = Math.max(3, ((endMin - startMin) / 1440) * trackW)
                         const text = seg.turns === 0
                           ? `${hhmm(seg.start)} ${t('stats.prompts')}`
@@ -265,10 +271,11 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                 </div>
               ))}
             </div>
-          ))}
+          )
+          })}
 
           {isToday && (
-            <div className="dsh-cal-nowline" style={{ left: LABEL_W + (minutesOf(nowMs) / 1440) * trackW }} />
+            <div className="dsh-cal-nowline" style={{ left: labelW + (minutesOf(nowMs) / 1440) * trackW }} />
           )}
         </div>
       </div>
