@@ -140,7 +140,6 @@ export const CALENDAR_CSS = `
   display: flex; align-items: center; gap: 8px;
   padding: 6px 10px;
   background: var(--dsw-alias-bg-layer-2, #12151a);
-  border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent);
   border-bottom: 1px solid color-mix(in srgb, var(--dsh-cal-text) 7%, transparent);
 }
 .dsh-cal-wslabel .wsbar { width: 3px; height: 13px; border-radius: 2px; background: var(--dsh-cal-accent); flex-shrink: 0; }
