@@ -37,7 +37,7 @@ Requires DeepSeek Harness with the Web profile (any release aligned with `0.1.0-
 dsh plugin --profile web add /path/to/dsh-calendar
 
 # or once published
-dsh plugin --profile web add dsh-calendar
+dsh plugin --profile web add dsh-usage-calendar
 ```
 
 Restart `dsh web`, then open **Settings → 📅 Calendar**.

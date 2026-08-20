@@ -1,5 +1,5 @@
 {
-  "name": "@yaoyaoyu/dsh-calendar",
+  "name": "dsh-usage-calendar",
   "version": "0.1.0",
   "description": "A beautiful usage calendar for DeepSeek Harness — see at a glance when and what DeepSeek did, in day/month/year views, with recurring-task scheduling.",
   "type": "module",

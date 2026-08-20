@@ -37,7 +37,7 @@
 dsh plugin --profile web add /path/to/dsh-calendar
 
 # 发布后
-dsh plugin --profile web add dsh-calendar
+dsh plugin --profile web add dsh-usage-calendar
 ```
 
 重启 `dsh web`，然后打开 **设置 → 📅 日程表**。
