@@ -1,9 +1,10 @@
 /**
- * Day view: a 24-hour Gantt timeline of one day's activity. Sessions group
- * under their workspace; each session row shows its recorded turn spans and
- * prompt points positioned on the hour axis. A pulsing "now" line marks the
- * current time on today's view; bars slide in on entry; hovering a bar shows
- * the exact window.
+ * Day view: a zoomable 24-hour Gantt timeline of one day's activity. Sessions
+ * group under their workspace; each session row shows its task segments and
+ * prompt points positioned on the hour axis. The timeline fits the container
+ * by default; zoom in/out with the toolbar buttons or Ctrl/⌘ + wheel (anchored
+ * to the pointer), and "Fit" snaps back. A pulsing red now-line marks the
+ * current time on today's view.
  *
  * @module dsh-calendar/client/DayView
  */
@@ -26,12 +27,15 @@ export interface DayViewProps {
   t: Translator
 }
 
-/** Horizontal pixels per hour (full view). */
-const HOUR_W = 40
-/** Compact pixels per hour (main-UI card). */
+/** Fallback pixels per hour before the first fit measurement. */
+const HOUR_W_FALLBACK = 40
+/** Compact pixels per hour (main-UI card — fixed, no zoom there). */
 const HOUR_W_COMPACT = 24
-/** Total axis width for 24 hours. */
-const DAY_W = 24 * HOUR_W
+/** Zoom bounds in pixels per hour. */
+const MIN_HOUR_W = 8
+const MAX_HOUR_W = 160
+/** Zoom step per wheel tick. */
+const ZOOM_STEP = 1.2
 
 /** Minutes-since-midnight of an epoch-ms value. */
 function minutesOf(ms: number): number {
@@ -61,8 +65,58 @@ interface WorkspaceGroup {
 export function DayView({ rows, date, active, compact = false, onOpenSession, t }: DayViewProps): ReactNode {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [tip, setTip] = useState<{ x: number; y: number; text: string } | null>(null)
-  const hourW = compact ? HOUR_W_COMPACT : HOUR_W
+  const [hourW, setHourW] = useState(compact ? HOUR_W_COMPACT : HOUR_W_FALLBACK)
+  const hourWRef = useRef(hourW)
+  hourWRef.current = hourW
+
   const dayW = 24 * hourW
+
+  const clamp = (v: number): number => Math.min(MAX_HOUR_W, Math.max(MIN_HOUR_W, v))
+
+  /** Fit the full 24h into the visible container width. */
+  const fit = (): void => {
+    const el = rootRef.current
+    if (el === null) return
+    const w = el.clientWidth
+    if (w > 0) setHourW(clamp(w / 24))
+    el.scrollLeft = 0
+  }
+
+  /** Zoom around a client X so the time under the pointer stays put. */
+  const zoomAt = (clientX: number, factor: number): void => {
+    const el = rootRef.current
+    if (el === null) return
+    const rect = el.getBoundingClientRect()
+    const anchorHours = (clientX - rect.left + el.scrollLeft) / hourWRef.current
+    const next = clamp(hourWRef.current * factor)
+    setHourW(next)
+    requestAnimationFrame(() => {
+      if (rootRef.current !== null) {
+        rootRef.current.scrollLeft = anchorHours * next - (clientX - rect.left)
+      }
+    })
+  }
+
+  // Default fit: measure after mount.
+  useEffect(() => {
+    if (compact) return
+    fit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compact])
+
+  // Ctrl/⌘ + wheel zoom (native listener so preventDefault works).
+  useEffect(() => {
+    const el = rootRef.current
+    if (el === null || compact) return
+    const onWheel = (e: WheelEvent): void => {
+      if (!e.ctrlKey && !e.metaKey) return
+      e.preventDefault()
+      zoomAt(e.clientX, e.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compact])
 
   const groups = useMemo<WorkspaceGroup[]>(() => {
     const map = new Map<string, SessionDay[]>()
@@ -113,64 +167,79 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   }
 
   const nowMs = Date.now()
+  const zoomCenter = (): number => {
+    const el = rootRef.current
+    if (el === null) return 0
+    return el.getBoundingClientRect().left + el.clientWidth / 2
+  }
 
   return (
-    <div ref={rootRef} className="dsh-cal-day">
-      <div className="dsh-cal-daycontent">
-        <div className="dsh-cal-axis" style={{ width: dayW }}>
-          {Array.from({ length: 25 }, (_, h) => (
-            <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
-          ))}
+    <div className="dsh-cal-daybox">
+      {!compact && (
+        <div className="dsh-cal-daytools">
+          <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), 1 / ZOOM_STEP)} title={t('day.zoomOut')}>−</button>
+          <button type="button" className="dsh-cal-navbtn" onClick={fit}>{t('day.fit')}</button>
+          <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), ZOOM_STEP)} title={t('day.zoomIn')}>＋</button>
+          <span className="dsh-cal-scale">{hourW.toFixed(0)} px/h</span>
         </div>
-
-        {groups.map(group => (
-          <div key={group.name} className="dsh-cal-wsgroup">
-            <div className="dsh-cal-wsname">
-              {group.name}
-              <span style={{ fontSize: 11, color: 'var(--dsh-cal-muted)', fontWeight: 400 }}>
-                {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(group.sessions.reduce((a, s) => a + s.activeMs, 0))}
-              </span>
-            </div>
-            {group.sessions.map(session => (
-              <div key={session.id} className="dsh-cal-sessrow">
-                <div className="dsh-cal-sessname" title={session.title}>
-                  <span className="dot" style={{ background: `hsl(${sessionHue(session.id)} 70% 62%)` }} />
-                  {session.title}
-                  {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
-                </div>
-                <div className="dsh-cal-track" style={{ width: dayW }}>
-                  {(() => {
-                    const segments = mergeSegments(session.intervals)
-                    return segments.map((seg, i) => {
-                      const startMin = minutesOf(seg.start)
-                      const endMin = Math.min(minutesOf(seg.end), 24 * 60)
-                      const width = Math.max(3, ((endMin - startMin) / 1440) * dayW)
-                      const text = seg.turns === 0
-                        ? `${hhmm(seg.start)} ${t('stats.prompts')}`
-                        : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
-                      return (
-                        <div
-                          key={i}
-                          className={`dsh-cal-bar${session.running && i === segments.length - 1 ? ' running' : ''}`}
-                          style={{ left: (startMin / 1440) * dayW, width }}
-                          onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
-                          onMouseLeave={() => setTip(null)}
-                          onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
-                        >
-                          {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
-                        </div>
-                      )
-                    })
-                  })()}
-                </div>
-              </div>
+      )}
+      <div ref={rootRef} className="dsh-cal-day">
+        <div className="dsh-cal-daycontent">
+          <div className="dsh-cal-axis" style={{ width: dayW }}>
+            {Array.from({ length: 25 }, (_, h) => (
+              <span key={h} className="tick" style={{ left: h * hourW }}>{h === 24 ? '24:00' : `${h}:00`}</span>
             ))}
           </div>
-        ))}
 
-        {isToday && (
-          <div className="dsh-cal-nowline" style={{ left: (minutesOf(nowMs) / 1440) * dayW }} />
-        )}
+          {groups.map(group => (
+            <div key={group.name} className="dsh-cal-wsgroup">
+              <div className="dsh-cal-wsname">
+                {group.name}
+                <span style={{ fontSize: 11, color: 'var(--dsh-cal-muted)', fontWeight: 400 }}>
+                  {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(group.sessions.reduce((a, s) => a + s.activeMs, 0))}
+                </span>
+              </div>
+              {group.sessions.map(session => (
+                <div key={session.id} className="dsh-cal-sessrow">
+                  <div className="dsh-cal-sessname" title={session.title}>
+                    <span className="dot" style={{ background: `hsl(${sessionHue(session.id)} 70% 62%)` }} />
+                    {session.title}
+                    {session.running && <span style={{ color: 'var(--dsh-cal-green)', marginLeft: 4 }}>●</span>}
+                  </div>
+                  <div className="dsh-cal-track" style={{ width: dayW }}>
+                    {(() => {
+                      const segments = mergeSegments(session.intervals)
+                      return segments.map((seg, i) => {
+                        const startMin = minutesOf(seg.start)
+                        const endMin = Math.min(minutesOf(seg.end), 24 * 60)
+                        const width = Math.max(3, ((endMin - startMin) / 1440) * dayW)
+                        const text = seg.turns === 0
+                          ? `${hhmm(seg.start)} ${t('stats.prompts')}`
+                          : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
+                        return (
+                          <div
+                            key={i}
+                            className={`dsh-cal-bar${session.running && i === segments.length - 1 ? ' running' : ''}`}
+                            style={{ left: (startMin / 1440) * dayW, width }}
+                            onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
+                            onMouseLeave={() => setTip(null)}
+                            onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
+                          >
+                            {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
+                          </div>
+                        )
+                      })
+                    })()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {isToday && (
+            <div className="dsh-cal-nowline" style={{ left: (minutesOf(nowMs) / 1440) * dayW }} />
+          )}
+        </div>
       </div>
 
       {tip !== null && (

@@ -109,8 +109,11 @@ export const CALENDAR_CSS = `
 
 /* ---- day view (Gantt timeline) ---- */
 .dsh-cal-viewport { min-width: 0; max-width: 100%; }
+.dsh-cal-daybox { min-width: 0; max-width: 100%; }
+.dsh-cal-daytools { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.dsh-cal-scale { font-size: 11px; color: var(--dsh-cal-muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin-left: 4px; }
 .dsh-cal-day { overflow-x: auto; max-width: 100%; }
-.dsh-cal-daycontent { position: relative; min-width: 960px; }
+.dsh-cal-daycontent { position: relative; min-width: 0; }
 .dsh-cal-axis { position: relative; height: 20px; margin-bottom: 2px; }
 .dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 0; }
 .dsh-cal-axis .tick::after { content: ''; position: absolute; left: 50%; top: 11px; height: 5px; width: 1px; background: var(--dsh-cal-border); }
