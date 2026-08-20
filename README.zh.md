@@ -6,6 +6,8 @@
 
 [![npm version](https://img.shields.io/npm/v/dsh-usage-calendar)](https://www.npmjs.com/package/dsh-usage-calendar) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+![dsh-calendar banner](docs/screenshots/banner.png)
+
 ---
 
 ## 效果预览
