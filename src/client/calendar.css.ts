@@ -68,11 +68,14 @@ export const CALENDAR_CSS = `
 /* ---- heat palette (theme accent, color-mix for alpha) ---- */
 .dsh-cal-cell { border-radius: 3px; border: none; padding: 0; cursor: pointer; position: relative; transition: transform 0.12s ease, box-shadow 0.12s ease; }
 .dsh-cal-cell:hover { transform: scale(1.35); box-shadow: var(--dsh-cal-shadow); z-index: 2; }
-.dsh-cal-l0 { background: color-mix(in srgb, var(--dsh-cal-accent) 8%, transparent); }
-.dsh-cal-l1 { background: color-mix(in srgb, var(--dsh-cal-accent) 22%, transparent); }
-.dsh-cal-l2 { background: color-mix(in srgb, var(--dsh-cal-accent) 45%, transparent); }
-.dsh-cal-l3 { background: color-mix(in srgb, var(--dsh-cal-accent) 70%, transparent); }
-.dsh-cal-l4 { background: var(--dsh-cal-accent); }
+.dsh-cal-l0 { background: color-mix(in srgb, var(--dsh-cal-accent) 12%, transparent); }
+.dsh-cal-l1 { background: color-mix(in srgb, var(--dsh-cal-accent) 38%, transparent); }
+.dsh-cal-l2 { background: color-mix(in srgb, var(--dsh-cal-accent) 62%, transparent); }
+.dsh-cal-l3 { background: color-mix(in srgb, var(--dsh-cal-accent) 85%, transparent); }
+.dsh-cal-l4 {
+  background: var(--dsh-cal-accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 32%, transparent);
+}
 .dsh-cal-cell.today { outline: 1.5px solid var(--dsh-cal-green); outline-offset: 1px; }
 .dsh-cal-cell.future { background: transparent; cursor: default; }
 .dsh-cal-cell.future:hover { transform: none; box-shadow: none; }
