@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>dsh-calendar · 演示</title>
+  <style>
+    /* Simulated DSH ui-theme tokens (dark by default, light via the body class). */
+    body {
+      --dsw-alias-bg-layer-3: #16191e;
+      --dsw-alias-bg-overlay: #1c2129;
+      --dsw-alias-border-l2: #262b33;
+      --dsw-alias-label-primary: #e6e9ee;
+      --dsw-alias-label-secondary: #8b93a1;
+      --dsw-alias-brand-primary: #4d7cfe;
+      --dsw-alias-state-success-primary: #6ee7b7;
+      --dsw-alias-state-error-primary: #f87171;
+      --dsw-alias-state-warn-primary: #fbbf24;
+      --dsw-alias-interactive-bg-hover: rgba(255, 255, 255, 0.06);
+      --dsw-alias-bg-mask-1: rgba(0, 0, 0, 0.5);
+      --dsw-alias-label-primary-inverted: #ffffff;
+      --dsw-shadow-lv3: 0 8px 30px rgba(0, 0, 0, 0.5);
+      margin: 0;
+      background: #12151a;
+      color: var(--dsw-alias-label-primary);
+      font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    body.dsh-cal-demo-light {
+      --dsw-alias-bg-layer-3: #ffffff;
+      --dsw-alias-bg-overlay: #ffffff;
+      --dsw-alias-border-l2: #e2e6ee;
+      --dsw-alias-label-primary: #1a2332;
+      --dsw-alias-label-secondary: #64748b;
+      --dsw-alias-brand-primary: #4d7cfe;
+      --dsw-alias-state-success-primary: #16a34a;
+      --dsw-alias-state-error-primary: #dc2626;
+      --dsw-alias-state-warn-primary: #d97706;
+      --dsw-alias-interactive-bg-hover: rgba(15, 23, 42, 0.06);
+      --dsw-alias-bg-mask-1: rgba(15, 23, 42, 0.4);
+      --dsw-alias-label-primary-inverted: #ffffff;
+      --dsw-shadow-lv3: 0 8px 30px rgba(15, 23, 42, 0.12);
+      background: #f4f6fa;
+    }
+
+    /* Demo page layout. */
+    .dsh-cal-demo { padding: 28px 32px 20px; max-width: 1280px; margin: 0 auto; }
+    .dsh-cal-demohead { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+    .dsh-cal-demo-title { font-size: 26px; font-weight: 800; letter-spacing: 0.3px; margin: 0 0 6px; }
+    .dsh-cal-demosub { margin: 0; font-size: 13px; color: var(--dsh-cal-muted); }
+    .dsh-cal-demogrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .dsh-cal-democard {
+      background: var(--dsh-cal-card); border: 1px solid var(--dsh-cal-border);
+      border-radius: 16px; padding: 16px 18px;
+    }
+    .dsh-cal-democard h3 { font-size: 14px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; color: var(--dsh-cal-text); }
+    .dsh-cal-democard h3 .tag { font-size: 11px; font-weight: 400; color: var(--dsh-cal-muted); border: 1px solid var(--dsh-cal-border); border-radius: 99px; padding: 1px 8px; }
+    .demo-year { grid-column: 1 / -1; }
+    .dsh-cal-demofoot { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 12px; color: var(--dsh-cal-muted); }
+    .dsh-cal-demofoot .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .dsh-cal-demofoot .swatch { width: 12px; height: 6px; border-radius: 3px; display: inline-block; }
+    @media (max-width: 900px) { .dsh-cal-demogrid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="../lib/demo.js"></script>
+</body>
+</html>
