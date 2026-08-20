@@ -14,19 +14,33 @@ English | [中文](README.zh.md)
 
 Four time perspectives of your DeepSeek usage — light and dark both follow DSH.
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="Year view"/><br/><b>🗓️ Year</b></td>
-    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="Month view"/><br/><b>🗂️ Month</b></td>
-    <td align="center"><img src="docs/screenshots/logs-7days.png" width="175" alt="7-day view"/><br/><b>📅 7-day</b></td>
-    <td align="center"><img src="docs/screenshots/logs-day.png" width="175" alt="Day view"/><br/><b>⏱️ Day</b></td>
-  </tr>
-</table>
+**🌙 Dark theme**
 
 <table align="center">
   <tr>
-    <td align="center"><img src="docs/screenshots/card-7days.png" width="280" alt="Main-UI card 7-day"/><br/><b>🃏 Main-UI card · 7-day</b></td>
-    <td align="center"><img src="docs/screenshots/card-day.png" width="280" alt="Main-UI card day"/><br/><b>🃏 Main-UI card · Day</b></td>
+    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="Year view (dark)"/><br/><b>🗓️ Year</b></td>
+    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="Month view (dark)"/><br/><b>🗂️ Month</b></td>
+    <td align="center"><img src="docs/screenshots/logs-7days.png" width="175" alt="7-day view (dark)"/><br/><b>📅 7-day</b></td>
+    <td align="center"><img src="docs/screenshots/logs-day.png" width="175" alt="Day view (dark)"/><br/><b>⏱️ Day</b></td>
+  </tr>
+</table>
+
+**☀️ Light theme**
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/logs-7days-light.png" width="175" alt="7-day view (light)"/><br/><b>📅 7-day</b></td>
+    <td align="center"><img src="docs/screenshots/logs-day-light.png" width="175" alt="Day view (light)"/><br/><b>⏱️ Day</b></td>
+  </tr>
+</table>
+
+**🃏 Main-UI cards**
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/card-7days.png" width="280" alt="Main-UI card 7-day"/><br/><b>7-day</b></td>
+    <td align="center"><img src="docs/screenshots/card-day.png" width="280" alt="Main-UI card day (dark)"/><br/><b>Day</b></td>
+    <td align="center"><img src="docs/screenshots/card-day-light.png" width="280" alt="Main-UI card day (light)"/><br/><b>Day · light</b></td>
   </tr>
 </table>
 
