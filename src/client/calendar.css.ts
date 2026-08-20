@@ -131,18 +131,18 @@ export const CALENDAR_CSS = `
 .dsh-cal-axis .tick { position: absolute; font-size: 10px; color: var(--dsh-cal-muted); transform: translateX(-50%); top: 3px; }
 .dsh-cal-axis .tick::after { content: ''; position: absolute; left: 50%; top: 11px; height: 5px; width: 1px; background: var(--dsh-cal-border); }
 
-/* workspace row: label column + empty track spacer */
+/* workspace row: sticky label column + session rows */
 .dsh-cal-wsrow { border-top: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent); }
 .dsh-cal-wslabel {
   position: sticky; left: 0; z-index: 6;
+  width: var(--dsh-cal-label-w);
   display: flex; align-items: center; gap: 8px;
   padding: 6px 8px;
   background: var(--dsw-alias-bg-layer-2, #12151a);
   border-right: 1px solid color-mix(in srgb, var(--dsh-cal-text) 9%, transparent);
 }
-.dsh-cal-wslabel .wsname { font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsh-cal-wslabel .wsname { flex: 1; font-size: 12px; font-weight: 700; color: var(--dsh-cal-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsh-cal-wslabel .wscount { font-size: 10px; color: var(--dsh-cal-muted); white-space: nowrap; }
-.dsh-cal-wstrack { position: relative; height: 0; }
 
 /* session row: sticky label + track */
 .dsh-cal-sessrow { display: grid; grid-template-columns: var(--dsh-cal-label-w) 1fr; }

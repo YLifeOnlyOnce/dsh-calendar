@@ -228,7 +228,6 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                   {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(group.sessions.reduce((a, s) => a + s.activeMs, 0))}
                 </span>
               </div>
-              <div className="dsh-cal-wstrack" style={{ width: trackW }} />
 
               {group.sessions.map(session => (
                 <div key={session.id} className="dsh-cal-sessrow">
