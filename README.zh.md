@@ -14,23 +14,30 @@
 
 四个时间视角看你的 DeepSeek 使用 —— 亮色与暗色都自动跟随 DSH。
 
-**🌙 暗色主题**
+**🗓️ 年 与 🗂️ 月**
 
 <table align="center">
   <tr>
-    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="年视图（暗色）"/><br/><b>🗓️ 年</b></td>
-    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="月视图（暗色）"/><br/><b>🗂️ 月</b></td>
-    <td align="center"><img src="docs/screenshots/logs-7days.png" width="175" alt="7天视图（暗色）"/><br/><b>📅 7天</b></td>
-    <td align="center"><img src="docs/screenshots/logs-day.png" width="175" alt="日视图（暗色）"/><br/><b>⏱️ 日</b></td>
+    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="年视图（暗色）"/><br/><b>年</b></td>
+    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="月视图（暗色）"/><br/><b>月</b></td>
   </tr>
 </table>
 
-**☀️ 亮色主题**
+**📅 7天视图**
 
 <table align="center">
   <tr>
-    <td align="center"><img src="docs/screenshots/logs-7days-light.png" width="175" alt="7天视图（亮色）"/><br/><b>📅 7天</b></td>
-    <td align="center"><img src="docs/screenshots/logs-day-light.png" width="175" alt="日视图（亮色）"/><br/><b>⏱️ 日</b></td>
+    <td align="center"><img src="docs/screenshots/logs-7days-dark.png" width="175" alt="7天视图（暗色）"/><br/><b>🌙 暗色</b></td>
+    <td align="center"><img src="docs/screenshots/logs-7days-light.png" width="175" alt="7天视图（亮色）"/><br/><b>☀️ 亮色</b></td>
+  </tr>
+</table>
+
+**⏱️ 日视图**
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/logs-day-dark.png" width="175" alt="日视图（暗色）"/><br/><b>🌙 暗色</b></td>
+    <td align="center"><img src="docs/screenshots/logs-day-light.png" width="175" alt="日视图（亮色）"/><br/><b>☀️ 亮色</b></td>
   </tr>
 </table>
 
@@ -39,8 +46,8 @@
 <table align="center">
   <tr>
     <td align="center"><img src="docs/screenshots/card-7days.png" width="280" alt="主界面卡片 7天"/><br/><b>7天</b></td>
-    <td align="center"><img src="docs/screenshots/card-day.png" width="280" alt="主界面卡片 日（暗色）"/><br/><b>日</b></td>
-    <td align="center"><img src="docs/screenshots/card-day-light.png" width="280" alt="主界面卡片 日（亮色）"/><br/><b>日 · 亮色</b></td>
+    <td align="center"><img src="docs/screenshots/card-day-dark.png" width="280" alt="主界面卡片 日（暗色）"/><br/><b>日 · 🌙 暗色</b></td>
+    <td align="center"><img src="docs/screenshots/card-day-light.png" width="280" alt="主界面卡片 日（亮色）"/><br/><b>日 · ☀️ 亮色</b></td>
   </tr>
 </table>
 
