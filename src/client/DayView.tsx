@@ -246,28 +246,53 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                     <div className="dsh-cal-track" style={{ width: trackW }}>
                       {(() => {
                         const segments = mergeSegments(session.intervals)
-                        return segments.map((seg, i) => {
-                          const startMin = minutesOf(seg.start)
-                          const endMin = Math.min(minutesOf(seg.end), 24 * 60)
-                        const width = Math.max(3, ((endMin - startMin) / 1440) * trackW)
-                        const text = seg.turns === 0
-                          ? `${hhmm(seg.start)} ${t('stats.prompts')}`
-                          : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
+                        const first = segments[0]
+                        const last = segments[segments.length - 1]
+                        if (first === undefined || last === undefined) return null
+                        // One session-spanning container: first activity → last,
+                        // with the real task segments rendered solid inside.
+                        const spanStart = first.start
+                        const spanEnd = last.end
+                        const spanStartMin = minutesOf(spanStart)
+                        const spanEndMin = Math.min(minutesOf(spanEnd), 24 * 60)
+                        const spanLeft = (spanStartMin / 1440) * trackW
+                        const spanWidth = Math.max(6, ((spanEndMin - spanStartMin) / 1440) * trackW)
+                        const totalActive = segments.reduce((a, s) => a + Math.max(0, s.end - s.start), 0)
                         return (
                           <div
-                            key={i}
-                            className={`dsh-cal-bar${session.running && i === segments.length - 1 ? ' running' : ''}`}
-                            style={{ left: (startMin / 1440) * trackW, width }}
-                            onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
+                            className={`dsh-cal-sessspan${session.running ? ' running' : ''}`}
+                            style={{ left: spanLeft, width: spanWidth }}
+                            onMouseEnter={e => showTip(
+                              `${hhmm(spanStart)} – ${hhmm(spanEnd)} · 活跃 ${fmtDuration(totalActive)} · ${t('tooltip.turns', { count: segments.length })}`,
+                              e.clientX, e.clientY,
+                            )}
                             onMouseLeave={() => setTip(null)}
                             onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
                           >
-                            {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
+                            {segments.map((seg, i) => {
+                              const startMin = minutesOf(seg.start)
+                              const endMin = Math.min(minutesOf(seg.end), 24 * 60)
+                              const width = Math.max(3, ((endMin - startMin) / 1440) * trackW)
+                              const text = seg.turns === 0
+                                ? `${hhmm(seg.start)} ${t('stats.prompts')}`
+                                : `${hhmm(seg.start)} – ${hhmm(seg.end)} · ${fmtDuration(seg.end - seg.start)} · ${t('tooltip.turns', { count: seg.turns })}`
+                              return (
+                                <div
+                                  key={i}
+                                  className={`dsh-cal-bar${seg.prompts > 0 ? ' hasprompt' : ''}`}
+                                  style={{ left: ((startMin - spanStartMin) / 1440) * trackW, width }}
+                                  onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
+                                  onMouseLeave={() => setTip(null)}
+                                  onClick={onOpenSession !== undefined ? () => onOpenSession(session.id) : undefined}
+                                >
+                                  {seg.prompts > 0 && <span className="dsh-cal-segprompt" />}
+                                </div>
+                              )
+                            })}
                           </div>
                         )
-                      })
-                    })()}
-                  </div>
+                      })()}
+                    </div>
                 </div>
               ))}
             </div>

@@ -160,8 +160,13 @@ export const CALENDAR_CSS = `
 .dsh-cal-sesslabel .run { color: var(--dsh-cal-green); font-size: 9px; animation: dsh-cal-pulse 1.6s ease-in-out infinite; }
 .dsh-cal-track { position: relative; height: 14px; margin: 2px 0; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); }
 .dsh-cal-sessrow + .dsh-cal-sessrow .dsh-cal-track { background: color-mix(in srgb, var(--dsh-cal-text) 7%, transparent); }
-.dsh-cal-bar { position: absolute; top: 1px; bottom: 1px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
-.dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
+.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.9; transform-origin: left; cursor: pointer; }
+.dsh-cal-sessspan {
+  position: absolute; top: 1px; bottom: 1px; border-radius: 5px; cursor: pointer;
+  background: color-mix(in srgb, var(--dsh-cal-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dsh-cal-accent) 26%, transparent);
+}
+.dsh-cal-sessspan.running { animation: dsh-cal-pulse 2.4s ease-in-out infinite; }
 .dsh-cal-segprompt { position: absolute; left: 1px; top: 1px; bottom: 1px; width: 2px; border-radius: 2px; background: var(--dsh-cal-green); }
 .dsh-cal-nowline { position: absolute; top: 20px; bottom: 0; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
 .dsh-cal-nowline::before { content: ''; position: absolute; top: -3px; left: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--dsh-cal-red); box-shadow: 0 0 8px var(--dsh-cal-red); }
