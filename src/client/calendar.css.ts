@@ -20,6 +20,7 @@ export const CALENDAR_CSS = `
   --dsh-cal-muted: var(--dsw-alias-label-secondary, #8b93a1);
   /* brand blue, NOT --dsw-alias-brand-primary (near-white in light / near-black in dark) */
   --dsh-cal-accent: var(--dsw-alias-brand-primary-new-colorprimary-new-color, #4d7cfe);
+  --dsh-cal-wsfolder: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'/%3E%3C/svg%3E");
   --dsh-cal-green: var(--dsw-alias-state-success-primary, #6ee7b7);
   --dsh-cal-red: var(--dsw-alias-state-error-primary, #f87171);
   --dsh-cal-amber: var(--dsw-alias-state-warn-primary, #fbbf24);
@@ -138,14 +139,29 @@ export const CALENDAR_CSS = `
 .dsh-cal-wslabel {
   position: sticky; left: 0; z-index: 6;
   width: 280px;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 7px;
   padding: 6px 10px;
   background: var(--dsw-alias-bg-layer-2, #12151a);
   border-bottom: 1px solid color-mix(in srgb, var(--dsh-cal-text) 7%, transparent);
 }
-.dsh-cal-wslabel .wsbar { width: 3px; height: 13px; border-radius: 2px; background: var(--dsh-cal-accent); flex-shrink: 0; }
+.dsh-cal-wslabel .wsbar {
+  width: 4px; height: 15px; border-radius: 99px; flex-shrink: 0;
+  background: linear-gradient(180deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 45%, transparent));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--dsh-cal-accent) 45%, transparent);
+}
+.dsh-cal-wslabel .wsicon {
+  width: 12px; height: 12px; flex-shrink: 0; color: var(--dsh-cal-accent);
+  background: var(--dsh-cal-wsfolder) center / contain no-repeat;
+  opacity: 0.9;
+}
 .dsh-cal-wslabel .wsname { flex: 0 1 auto; font-size: 12.5px; font-weight: 700; color: var(--dsh-cal-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dsh-cal-wslabel .wscount { font-size: 11px; color: var(--dsh-cal-muted); white-space: nowrap; }
+.dsh-cal-wslabel .wscount {
+  font-size: 10px; font-weight: 600; white-space: nowrap; margin-left: auto;
+  color: var(--dsh-cal-accent);
+  background: color-mix(in srgb, var(--dsh-cal-accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dsh-cal-accent) 28%, transparent);
+  border-radius: 99px; padding: 1px 7px;
+}
 
 /* session row: sticky label + track */
 .dsh-cal-sessrow { display: grid; grid-template-columns: var(--dsh-cal-label-w) 1fr; }
@@ -227,8 +243,11 @@ export const CALENDAR_CSS = `
 .dsh-cal-card .dsh-cal-monthcell .amt { font-size: 9px; margin-top: 1px; }
 .dsh-cal-card .dsh-cal-monthcell .sub { display: none; }
 .dsh-cal-card .dsh-cal-daycontent { min-width: 0; }
-.dsh-cal-card .dsh-cal-daybox { --dsh-cal-label-w: 190px; }
-.dsh-cal-card .dsh-cal-wslabel { width: var(--dsh-cal-label-w); }
+.dsh-cal-daybox.compact { --dsh-cal-label-w: 190px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel { width: var(--dsh-cal-label-w); gap: 5px; padding: 5px 8px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel .wsbar { width: 3px; height: 13px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel .wsicon { width: 10px; height: 10px; }
+.dsh-cal-daybox.compact .dsh-cal-wslabel .wscount { font-size: 9px; padding: 0 6px; }
 .dsh-cal-card .dsh-cal-stat { padding: 6px 10px; min-width: 80px; }
 .dsh-cal-card .dsh-cal-stat .value { font-size: 15px; }
 

@@ -217,7 +217,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
   for (let h = 0; h <= 24; h += tickStep) hourTicks.push(h)
 
   return (
-    <div className="dsh-cal-daybox">
+    <div className={`dsh-cal-daybox${compact ? ' compact' : ''}`}>
       <div className="dsh-cal-daytools">
         <button type="button" className="dsh-cal-navbtn" onClick={() => zoomAt(zoomCenter(), 1 / ZOOM_STEP)} title={t('day.zoomOut')}>−</button>
         <button type="button" className="dsh-cal-navbtn" onClick={fit}>{t('day.fit')}</button>
@@ -252,6 +252,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                     the label column), so the name shows fully with stats. */}
                 <div className="dsh-cal-wslabel">
                   <span className="wsbar" />
+                  <span className="wsicon" aria-hidden="true" />
                   <span className="wsname">{group.name}</span>
                   <span className="wscount">
                     {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(groupActive)}

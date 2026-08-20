@@ -256,6 +256,10 @@ function DemoApp() {
           <h3>⏱️ {t('card.day')} · {todayKey}</h3>
           <DayView rows={rows} date={todayKey} active t={t} />
         </div>
+        <div className="dsh-cal-democard demo-daycard">
+          <h3>🃏 {t('card.day')} · 小组件样式 <span className="tag">compact</span></h3>
+          <DayView rows={rows} date={todayKey} active compact t={t} />
+        </div>
         <div className="dsh-cal-democard demo-month">
           <h3>🗂️ {t('card.month')}</h3>
           <MonthView days={days} month={today} active onPickDay={() => {}} t={t} />
