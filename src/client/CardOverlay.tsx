@@ -151,7 +151,7 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
   if (!hasData || layout.visible.length === 0) return null
 
   return (
-    <div className="dsh-cal-cardlayer" data-card-layer>
+    <div className="dsh-cal-root dsh-cal-cardlayer" data-card-layer>
       {layout.visible.map(id => (
         <DraggableCard
           key={id}
