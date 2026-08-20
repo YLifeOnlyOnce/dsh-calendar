@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dsh-calendar · DeepSeek 使用日程表</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg-soft: #10141d;
+    --card: rgba(22, 25, 30, 0.72);
+    --border: rgba(148, 163, 184, 0.14);
+    --border-strong: rgba(148, 163, 184, 0.28);
+    --text: #e8edf6;
+    --muted: #8b93a1;
+    --accent: #4d7cfe;
+    --accent-2: #7c6bff;
+    --green: #6ee7b7;
+    --red: #f87171;
+    --font: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 55% at 72% 18%, rgba(77, 124, 254, 0.22), transparent 62%),
+      radial-gradient(48% 45% at 18% 82%, rgba(124, 107, 255, 0.16), transparent 60%),
+      linear-gradient(180deg, #0d1017 0%, var(--bg) 55%, #0a0d13 100%);
+  }
+  /* fine grid lines */
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(75% 65% at 50% 40%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(75% 65% at 50% 40%, #000 30%, transparent 100%);
+  }
+  /* drifting glow blobs */
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; pointer-events: none; }
+  .blob-1 { width: 480px; height: 480px; background: rgba(77, 124, 254, 0.5); top: -120px; right: 6%; animation: drift 16s ease-in-out infinite alternate; }
+  .blob-2 { width: 380px; height: 380px; background: rgba(124, 107, 255, 0.45); bottom: -100px; left: 4%; animation: drift 20s ease-in-out infinite alternate-reverse; }
+  .blob-3 { width: 260px; height: 260px; background: rgba(110, 231, 183, 0.22); top: 46%; left: 58%; animation: drift 24s ease-in-out infinite alternate; }
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(40px, -30px) scale(1.12); }
+  }
+
+  .nav {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 44px;
+  }
+  .nav .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; letter-spacing: 0.2px; }
+  .nav .logo .mark {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 15px;
+    box-shadow: 0 4px 18px rgba(77, 124, 254, 0.45);
+  }
+  .nav .links { display: flex; gap: 18px; font-size: 13px; color: var(--muted); }
+  .nav .links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .nav .links a:hover { color: var(--text); }
+
+  .hero-content { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 120px 40px 40px; text-align: center; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; color: var(--accent);
+    border: 1px solid rgba(77, 124, 254, 0.35);
+    background: rgba(77, 124, 254, 0.1);
+    border-radius: 99px; padding: 6px 14px; margin-bottom: 26px;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  h1 {
+    font-size: clamp(46px, 7vw, 84px);
+    font-weight: 900; letter-spacing: 1px; line-height: 1.05;
+    background: linear-gradient(100deg, #ffffff 20%, #a9c2ff 55%, #8f9dff 80%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 60px rgba(77, 124, 254, 0.25);
+    margin-bottom: 18px;
+  }
+  .tagline { font-size: clamp(17px, 2.4vw, 22px); color: var(--text); font-weight: 600; margin-bottom: 10px; }
+  .sub { font-size: 14px; color: var(--muted); margin-bottom: 34px; letter-spacing: 0.3px; }
+
+  .cta { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  .cta code {
+    font-family: var(--mono); font-size: 13.5px; color: #cfe0ff;
+    background: rgba(20, 26, 38, 0.85); border: 1px solid var(--border-strong);
+    border-radius: 12px; padding: 12px 18px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .cta a.btn {
+    text-decoration: none; font-size: 13.5px; font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 12px; padding: 12px 22px;
+    box-shadow: 0 8px 24px rgba(77, 124, 254, 0.4);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .cta a.btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(77, 124, 254, 0.55); }
+
+  /* hero visual: the year heatmap framed */
+  .hero-visual {
+    position: relative; z-index: 2;
+    max-width: 960px; margin: 56px auto 0; padding: 0 32px 70px;
+  }
+  .frame {
+    position: relative;
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    background: rgba(18, 22, 29, 0.66);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 18px 20px 16px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  }
+  .frame .titlebar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .frame .titlebar .t { width: 11px; height: 11px; border-radius: 50%; }
+  .frame .titlebar .t:nth-child(1) { background: #ff5f57; }
+  .frame .titlebar .t:nth-child(2) { background: #febc2e; }
+  .frame .titlebar .t:nth-child(3) { background: #28c840; }
+  .frame .titlebar .label { margin-left: 8px; font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
+  .frame img { display: block; width: 100%; border-radius: 12px; }
+  .frame .glow {
+    position: absolute; inset: -1px; border-radius: 20px; pointer-events: none;
+    box-shadow: 0 0 120px rgba(77, 124, 254, 0.18);
+  }
+
+  /* ---------- sections ---------- */
+  .section { max-width: 1080px; margin: 0 auto; padding: 64px 40px; }
+  .section-head { text-align: center; margin-bottom: 40px; }
+  .section-head .kicker { font-size: 12px; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+  .section-head h2 { font-size: 30px; font-weight: 800; letter-spacing: 0.4px; }
+  .section-head p { color: var(--muted); font-size: 14px; margin-top: 10px; }
+
+  /* features grid */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .feature {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 22px 20px; backdrop-filter: blur(8px);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .feature:hover { transform: translateY(-4px); border-color: var(--border-strong); background: rgba(26, 30, 38, 0.85); }
+  .feature .ico { font-size: 24px; margin-bottom: 12px; }
+  .feature h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .feature p { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+  /* gallery */
+  .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .shot {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px;
+    backdrop-filter: blur(8px);
+  }
+  .shot.wide { grid-column: 1 / -1; }
+  .shot img { width: 100%; border-radius: 10px; display: block; }
+  .shot .cap { display: flex; align-items: center; gap: 8px; padding: 10px 6px 2px; font-size: 12.5px; font-weight: 600; }
+  .shot .cap span { font-weight: 400; color: var(--muted); font-size: 12px; }
+
+  /* install */
+  .install {
+    background:
+      radial-gradient(50% 80% at 50% 0%, rgba(77, 124, 254, 0.12), transparent 65%),
+      var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 34px; text-align: center;
+  }
+  .install h3 { font-size: 20px; margin-bottom: 8px; }
+  .install p { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  .install pre {
+    display: inline-block; text-align: left;
+    font-family: var(--mono); font-size: 13.5px; color: #cfe0ff;
+    background: rgba(13, 17, 25, 0.9); border: 1px solid var(--border-strong);
+    border-radius: 12px; padding: 14px 20px;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .install pre .prompt { color: var(--green); }
+
+  footer {
+    text-align: center; color: var(--muted); font-size: 12px;
+    padding: 44px 20px 50px; letter-spacing: 0.3px;
+  }
+  footer b { color: var(--text); }
+
+  @media (max-width: 860px) {
+    .features, .gallery { grid-template-columns: 1fr; }
+    .nav { padding: 18px 22px; }
+    .hero-content { padding: 110px 22px 30px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .badge .dot { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <nav class="nav">
+      <div class="logo"><span class="mark">📅</span> dsh-calendar</div>
+      <div class="links">
+        <a href="#features">功能</a>
+        <a href="#gallery">效果</a>
+        <a href="#install">安装</a>
+        <a href="https://github.com/YLifeOnlyOnce/dsh-calendar" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </nav>
+
+    <div class="hero-content">
+      <span class="badge"><span class="dot"></span> DeepSeek Harness 插件 · dsh-usage-calendar</span>
+      <h1>DeepSeek 使用日程表</h1>
+      <p class="tagline">一眼看清 DeepSeek 在什么时间、做了什么、做了多久</p>
+      <p class="sub">日 · 7天 · 月 · 年 · 主题跟随 · 可拖拽卡片 · 点击直达会话</p>
+      <div class="cta">
+        <code>$ dsh plugin --profile web add dsh-usage-calendar</code>
+        <a class="btn" href="#gallery">查看效果 ↓</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="frame">
+        <div class="titlebar"><span class="t"></span><span class="t"></span><span class="t"></span><span class="label">dsh-calendar · 年度热力图</span></div>
+        <img src="screenshots/logs-year.png" alt="年度热力图" />
+        <div class="glow"></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" id="features">
+    <div class="section-head">
+      <div class="kicker">Features</div>
+      <h2>把 DeepSeek 的工作，变成一眼可见的日历</h2>
+      <p>零配置 · 自动读取历史日志 · 跟随主题 · 纯前端动画</p>
+    </div>
+    <div class="features">
+      <div class="feature"><div class="ico">🗓️</div><h3>年度热力图</h3><p>GitHub 风格 52×7 贡献图，一眼看出哪段时间最忙。</p></div>
+      <div class="feature"><div class="ico">⏱️</div><h3>任务段时间轴</h3><p>一次用户输入开启一个任务，5 分钟内的轮次并入 —— 一个任务一根条。</p></div>
+      <div class="feature"><div class="ico">🃏</div><h3>主界面小卡片</h3><p>统计、热力图、时间线悬浮在主界面，随意拖拽、折叠、开关。</p></div>
+      <div class="feature"><div class="ico">🖱️</div><h3>点击直达</h3><p>点任意区间，直接打开当时的对话会话。</p></div>
+      <div class="feature"><div class="ico">🎨</div><h3>主题跟随</h3><p>所有颜色解析自 harness 主题令牌，亮色暗色自动适配。</p></div>
+      <div class="feature"><div class="ico">✨</div><h3>开箱即用</h3><p>历史会话启动时自动折叠缓存，上个月的活动打开就有。</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="gallery">
+    <div class="section-head">
+      <div class="kicker">Views</div>
+      <h2>四个时间视角，一个完整故事</h2>
+    </div>
+    <div class="gallery">
+      <div class="shot wide">
+        <img src="screenshots/logs-year.png" alt="年视图" />
+        <div class="cap">🗓️ 年 · 贡献热力图 <span>全年活跃一目了然</span></div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/logs-7days.png" alt="7天视图" />
+        <div class="cap">📅 7天 · 纵向时间线 <span>每会话专属色，跨天可追踪</span></div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/logs-day.png" alt="日视图" />
+        <div class="cap">⏱️ 日 · Gantt 时间轴 <span>任务段 + 实时"现在"线</span></div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/logs-month.png" alt="月视图" />
+        <div class="cap">🗂️ 月 · 日历网格 <span>每日热度条与统计</span></div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/card-7days.png" alt="主界面卡片 7天" />
+        <div class="cap">🃏 主界面卡片 · 7天 <span>可拖拽、可折叠</span></div>
+      </div>
+      <div class="shot">
+        <img src="screenshots/card-day.png" alt="主界面卡片 日" />
+        <div class="cap">🃏 主界面卡片 · 日 <span>随手一拖即可摆放</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="install">
+    <div class="install">
+      <h3>🚀 一分钟启用</h3>
+      <p>安装到 Web profile，重启后打开 设置 → 📅 日程表</p>
+      <pre><span class="prompt">$</span> dsh plugin --profile web add dsh-usage-calendar</pre>
+    </div>
+  </section>
+
+  <footer>
+    <b>dsh-calendar</b> · DeepSeek Harness 使用日程表 · <a href="https://github.com/YLifeOnlyOnce/dsh-calendar" style="color:var(--muted)">GitHub</a> · MIT License
+  </footer>
+
+</body>
+</html>
