@@ -30,6 +30,9 @@ jobs:
         run: pnpm build
 
       - name: Publish to npm
+        # Never blocks the GitHub Release: a manually published version (or a
+        # missing NPM_TOKEN secret) still lets the Release be created.
+        continue-on-error: true
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
