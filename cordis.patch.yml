@@ -8,7 +8,7 @@
 #       keepDays: 200
 - insert:
     - id: calendar
-      name: dsh-calendar
+      name: @yaoyaoyu/dsh-calendar
       config:
         keepDays: 400
         intervalCap: 1000

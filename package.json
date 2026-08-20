@@ -1,6 +1,6 @@
 {
-  "name": "dsh-calendar",
-  "version": "0.1.0-rc.7",
+  "name": "@yaoyaoyu/dsh-calendar",
+  "version": "0.1.0",
   "description": "A beautiful usage calendar for DeepSeek Harness — see at a glance when and what DeepSeek did, in day/month/year views, with recurring-task scheduling.",
   "type": "module",
   "main": "lib/index.js",
@@ -90,5 +90,16 @@
       ],
       "platform": "web"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YLifeOnlyOnce/dsh-calendar.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/YLifeOnlyOnce/dsh-calendar",
+  "bugs": {
+    "url": "https://github.com/YLifeOnlyOnce/dsh-calendar/issues"
   }
 }
