@@ -22,6 +22,7 @@ You use DeepSeek Harness every day — dozens of sessions, background jobs, sche
 | 📅 **7-day timeline** | Seven columns, one day each — a vertical 24-hour timeline with color-coded session bars (each session keeps its color across days) |
 | ⏱️ **Day timeline** | A 24-hour Gantt axis grouped by workspace → session, with turn spans, prompt points, and a pulsing red **now** line |
 | 🗂️ **Month grid** | Classic calendar with per-day heat bars and totals |
+| 🃏 **Main-UI cards** | Small draggable cards (stats, year, 7-day, day, month) that float over the main interface — move them anywhere, collapse or close them; pick which ones show in the Settings page |
 | 📊 **Stats strip** | Range-scoped active time / sessions / turns / tool calls, with decrypt-reveal and count-up animations |
 | 🎨 **Theme-aware** | Every color resolves through the harness ui-theme tokens — follows light *and* dark mode automatically |
 | ✨ **Animations** | [anime.js](https://animejs.com) entry effects + a hand-rolled decrypt-reveal headline, in the spirit of [canvas-ui's DecryptReveal](https://github.com/DavidHDev/canvas-ui) |
@@ -48,6 +49,7 @@ Restart `dsh web`, then open **Settings → 📅 Calendar**.
 - **Views** — switch between Day / 7-day / Month / Year with the segmented control.
 - **Navigation** — `‹ ›` steps by the view's unit; **Today** jumps back to now; clicking a heatmap cell or month cell drills into that day.
 - **Stats** — the strip always reflects the *selected range* (this year / month / today).
+- **Main-UI cards** — the small cards floating over the main interface (enabled by default: Stats + Year heatmap) are draggable by their ⠿ handle, collapsible to a title bar, and closable; re-enable any card in **Settings → Calendar → Main-UI cards**.
 - **Hover** — any cell or timeline bar shows the exact window, duration, and session.
 - **Live** — the running session's bars pulse, and today's day view draws a live now-line.
 
