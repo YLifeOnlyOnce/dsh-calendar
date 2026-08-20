@@ -12,27 +12,23 @@
 
 ## 效果预览
 
-四个时间视角看你的 DeepSeek 使用 —— **年 / 月 / 7天 / 日**，亮色与暗色都自动跟随 DSH。
+四个时间视角看你的 DeepSeek 使用 —— 亮色与暗色都自动跟随 DSH。
 
-**🗓️ 年** —— GitHub 风格全年活跃贡献热力图：
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="年视图"/><br/><b>🗓️ 年</b></td>
+    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="月视图"/><br/><b>🗂️ 月</b></td>
+    <td align="center"><img src="docs/screenshots/logs-7days.png" width="175" alt="7天视图"/><br/><b>📅 7天</b></td>
+    <td align="center"><img src="docs/screenshots/logs-day.png" width="175" alt="日视图"/><br/><b>⏱️ 日</b></td>
+  </tr>
+</table>
 
-![年视图 —— 贡献热力图](docs/screenshots/logs-year.png)
-
-**🗂️ 月** —— 每日热度条与统计：
-
-![月视图 —— 日历网格](docs/screenshots/logs-month.png)
-
-**📅 7天** —— 七列、每列一天，纵向 24h 时间线；每个会话保持专属色：
-
-![7天视图 —— 纵向时间线](docs/screenshots/logs-7days.png)
-
-**⏱️ 日** —— 按工作区 → 会话分组的 24h Gantt 时间轴，任务段与实时"现在"线：
-
-![日视图 —— Gantt 时间轴](docs/screenshots/logs-day.png)
-
-**🃏 主界面小组件** —— 悬浮在主界面上的可拖拽小卡片（在设置页勾选展示哪些）：
-
-![主界面卡片 —— 7天](docs/screenshots/card-7days.png) ![主界面卡片 —— 日](docs/screenshots/card-day.png)
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/card-7days.png" width="280" alt="主界面卡片 7天"/><br/><b>🃏 主界面卡片 · 7天</b></td>
+    <td align="center"><img src="docs/screenshots/card-day.png" width="280" alt="主界面卡片 日"/><br/><b>🃏 主界面卡片 · 日</b></td>
+  </tr>
+</table>
 
 ---
 

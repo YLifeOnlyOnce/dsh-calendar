@@ -12,27 +12,23 @@ English | [中文](README.zh.md)
 
 ## Screenshots
 
-Four time perspectives of your DeepSeek usage — **year / month / 7-day / day** — light and dark both follow DSH.
+Four time perspectives of your DeepSeek usage — light and dark both follow DSH.
 
-**🗓️ Year** — GitHub-style contribution heatmap of a whole year's activity:
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/logs-year.png" width="175" alt="Year view"/><br/><b>🗓️ Year</b></td>
+    <td align="center"><img src="docs/screenshots/logs-month.png" width="175" alt="Month view"/><br/><b>🗂️ Month</b></td>
+    <td align="center"><img src="docs/screenshots/logs-7days.png" width="175" alt="7-day view"/><br/><b>📅 7-day</b></td>
+    <td align="center"><img src="docs/screenshots/logs-day.png" width="175" alt="Day view"/><br/><b>⏱️ Day</b></td>
+  </tr>
+</table>
 
-![Year view — contribution heatmap](docs/screenshots/logs-year.png)
-
-**🗂️ Month** — per-day heat bars and totals:
-
-![Month view — calendar grid](docs/screenshots/logs-month.png)
-
-**📅 7-day** — seven columns, one day each, a vertical 24-hour timeline; each session keeps its own color:
-
-![7-day view — vertical timeline](docs/screenshots/logs-7days.png)
-
-**⏱️ Day** — a 24-hour Gantt axis grouped by workspace → session, with task segments and the live now-line:
-
-![Day view — Gantt timeline](docs/screenshots/logs-day.png)
-
-**🃏 Main-UI cards** — small draggable cards floating over the main interface (choose which ones show in Settings):
-
-![Main-UI card — 7-day](docs/screenshots/card-7days.png) ![Main-UI card — day](docs/screenshots/card-day.png)
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/screenshots/card-7days.png" width="280" alt="Main-UI card 7-day"/><br/><b>🃏 Main-UI card · 7-day</b></td>
+    <td align="center"><img src="docs/screenshots/card-day.png" width="280" alt="Main-UI card day"/><br/><b>🃏 Main-UI card · Day</b></td>
+  </tr>
+</table>
 
 ---
 
