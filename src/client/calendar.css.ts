@@ -2,20 +2,28 @@
  * dsh-calendar browser styles, injected as one `<style data-plugin>` tag by
  * the client plugin body. Class names are hand-scoped with a `dsh-cal-`
  * prefix (this standalone project does not use the repository's CSS-modules
- * build preset). Colors follow the DSH Web dark surface.
+ * build preset).
+ *
+ * Colors follow the DSH Web theme: every value resolves through the harness
+ * ui-theme alias tokens (`--dsw-alias-*`, light/dark aware, set on the page
+ * body), with a dark fallback palette for compositions without the theme
+ * plugin. The heat scale derives from the brand accent via `color-mix`, so
+ * it stays legible under either scheme.
  */
 
 export const CALENDAR_CSS = `
 .dsh-cal-root {
-  --dsh-cal-bg: #12151a;
-  --dsh-cal-card: #16191e;
-  --dsh-cal-border: #262b33;
-  --dsh-cal-text: #e6e9ee;
-  --dsh-cal-muted: #8b93a1;
-  --dsh-cal-accent: #4d7cfe;
-  --dsh-cal-green: #6ee7b7;
-  --dsh-cal-amber: #fbbf24;
-  --dsh-cal-red: #f87171;
+  --dsh-cal-card: var(--dsw-alias-bg-layer-3, #16191e);
+  --dsh-cal-card-raised: var(--dsw-alias-bg-overlay, #1c2129);
+  --dsh-cal-border: var(--dsw-alias-border-l2, #262b33);
+  --dsh-cal-text: var(--dsw-alias-label-primary, #e6e9ee);
+  --dsh-cal-muted: var(--dsw-alias-label-secondary, #8b93a1);
+  --dsh-cal-accent: var(--dsw-alias-brand-primary, #4d7cfe);
+  --dsh-cal-green: var(--dsw-alias-state-success-primary, #6ee7b7);
+  --dsh-cal-red: var(--dsw-alias-state-error-primary, #f87171);
+  --dsh-cal-amber: var(--dsw-alias-state-warn-primary, #fbbf24);
+  --dsh-cal-hover: var(--dsw-alias-interactive-bg-hover, rgba(255, 255, 255, 0.06));
+  --dsh-cal-shadow: var(--dsw-shadow-lv3, 0 8px 30px rgba(0, 0, 0, 0.5));
   --dsh-cal-gap: 3px;
   color: var(--dsh-cal-text);
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -31,9 +39,9 @@ export const CALENDAR_CSS = `
   background: var(--dsh-cal-card); color: var(--dsh-cal-text); border: 1px solid var(--dsh-cal-border);
   border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; transition: all 0.15s ease;
 }
-.dsh-cal-navbtn:hover { border-color: var(--dsh-cal-accent); color: var(--dsh-cal-accent); }
+.dsh-cal-navbtn:hover { border-color: var(--dsh-cal-accent); color: var(--dsh-cal-accent); background: var(--dsh-cal-hover); }
 .dsh-cal-navbtn:disabled { opacity: 0.4; cursor: default; }
-.dsh-cal-navbtn.primary { background: var(--dsh-cal-accent); border-color: var(--dsh-cal-accent); color: #fff; }
+.dsh-cal-navbtn.primary { background: var(--dsh-cal-accent); border-color: var(--dsh-cal-accent); color: var(--dsw-alias-label-primary-inverted, #fff); }
 .dsh-cal-range { font-size: 13px; color: var(--dsh-cal-text); font-weight: 600; min-width: 96px; text-align: center; }
 
 /* ---- view switcher ---- */
@@ -43,7 +51,7 @@ export const CALENDAR_CSS = `
   padding: 4px 14px; font-size: 12px; cursor: pointer; transition: all 0.2s ease;
 }
 .dsh-cal-viewbtn:hover { color: var(--dsh-cal-text); }
-.dsh-cal-viewbtn.active { background: var(--dsh-cal-accent); color: #fff; box-shadow: 0 2px 8px rgba(77, 124, 254, 0.35); }
+.dsh-cal-viewbtn.active { background: var(--dsh-cal-accent); color: var(--dsw-alias-label-primary-inverted, #fff); box-shadow: 0 2px 8px color-mix(in srgb, var(--dsh-cal-accent) 35%, transparent); }
 
 /* ---- stats ---- */
 .dsh-cal-stats { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
@@ -55,14 +63,14 @@ export const CALENDAR_CSS = `
 .dsh-cal-stat .value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .dsh-cal-stat .value.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-/* ---- heat palette (dark) ---- */
+/* ---- heat palette (theme accent, color-mix for alpha) ---- */
 .dsh-cal-cell { border-radius: 3px; border: none; padding: 0; cursor: pointer; position: relative; transition: transform 0.12s ease, box-shadow 0.12s ease; }
-.dsh-cal-cell:hover { transform: scale(1.35); box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
-.dsh-cal-l0 { background: rgba(77,124,254,0.07); }
-.dsh-cal-l1 { background: rgba(77,124,254,0.22); }
-.dsh-cal-l2 { background: rgba(77,124,254,0.45); }
-.dsh-cal-l3 { background: rgba(77,124,254,0.7); }
-.dsh-cal-l4 { background: #6d8bff; }
+.dsh-cal-cell:hover { transform: scale(1.35); box-shadow: var(--dsh-cal-shadow); z-index: 2; }
+.dsh-cal-l0 { background: color-mix(in srgb, var(--dsh-cal-accent) 8%, transparent); }
+.dsh-cal-l1 { background: color-mix(in srgb, var(--dsh-cal-accent) 22%, transparent); }
+.dsh-cal-l2 { background: color-mix(in srgb, var(--dsh-cal-accent) 45%, transparent); }
+.dsh-cal-l3 { background: color-mix(in srgb, var(--dsh-cal-accent) 70%, transparent); }
+.dsh-cal-l4 { background: var(--dsh-cal-accent); }
 .dsh-cal-cell.today { outline: 1.5px solid var(--dsh-cal-green); outline-offset: 1px; }
 .dsh-cal-cell.future { background: transparent; cursor: default; }
 .dsh-cal-cell.future:hover { transform: none; box-shadow: none; }
@@ -106,8 +114,8 @@ export const CALENDAR_CSS = `
 .dsh-cal-sessrow { display: flex; align-items: center; margin-bottom: 3px; }
 .dsh-cal-sessname { width: 150px; flex-shrink: 0; font-size: 11px; color: var(--dsh-cal-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 10px; }
 .dsh-cal-sessname .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
-.dsh-cal-track { position: relative; height: 14px; background: rgba(255, 255, 255, 0.025); border-radius: 4px; flex: 1; }
-.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, #4d7cfe, #6d8bff); opacity: 0.88; transform-origin: left; }
+.dsh-cal-track { position: relative; height: 14px; background: color-mix(in srgb, var(--dsh-cal-text) 4%, transparent); border-radius: 4px; flex: 1; }
+.dsh-cal-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: linear-gradient(90deg, var(--dsh-cal-accent), color-mix(in srgb, var(--dsh-cal-accent) 75%, white)); opacity: 0.88; transform-origin: left; }
 .dsh-cal-bar.running { animation: dsh-cal-pulse 2s ease-in-out infinite; }
 .dsh-cal-bar.prompt { background: var(--dsh-cal-green); width: 4px; border-radius: 50%; }
 .dsh-cal-nowline { position: absolute; top: -3px; bottom: -4px; width: 2px; background: var(--dsh-cal-red); z-index: 5; pointer-events: none; }
@@ -120,9 +128,9 @@ export const CALENDAR_CSS = `
 .dsh-cal-wday .sub { font-size: 10px; color: var(--dsh-cal-muted); font-weight: 400; }
 .dsh-cal-wday.today { color: var(--dsh-cal-green); }
 .dsh-cal-wtrack { position: relative; border: 1px solid var(--dsh-cal-border); border-radius: 8px; background: var(--dsh-cal-card); overflow: hidden; }
-.dsh-cal-whour { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255, 255, 255, 0.06); }
+.dsh-cal-whour { position: absolute; left: 0; right: 0; border-top: 1px dashed color-mix(in srgb, var(--dsh-cal-text) 10%, transparent); }
 .dsh-cal-wbar { position: absolute; border-radius: 3px; min-width: 6px; opacity: 0.85; transform-origin: top; cursor: pointer; }
-.dsh-cal-wbar:hover { opacity: 1; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.35); z-index: 3; }
+.dsh-cal-wbar:hover { opacity: 1; box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--dsh-cal-text) 35%, transparent); z-index: 3; }
 .dsh-cal-whourlabel { position: absolute; left: 3px; font-size: 9px; color: var(--dsh-cal-muted); pointer-events: none; }
 
 .dsh-cal-empty { color: var(--dsh-cal-muted); font-size: 13px; text-align: center; padding: 40px 0; }
@@ -134,21 +142,21 @@ export const CALENDAR_CSS = `
   padding: 10px 12px 12px; transition: box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
 }
 .dsh-cal-widget.dropmode { box-shadow: 0 0 0 1.5px var(--dsh-cal-accent); }
-.dsh-cal-widget.dragging { opacity: 0.45; transform: scale(0.98); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+.dsh-cal-widget.dragging { opacity: 0.45; transform: scale(0.98); box-shadow: var(--dsh-cal-shadow); }
 .dsh-cal-widgethead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .dsh-cal-widgethandle {
   cursor: grab; color: var(--dsh-cal-muted); font-size: 13px; padding: 2px 4px; border-radius: 6px;
   user-select: none; touch-action: none; transition: color 0.15s ease, background 0.15s ease;
 }
-.dsh-cal-widgethandle:hover { color: var(--dsh-cal-accent); background: rgba(77, 124, 254, 0.1); }
+.dsh-cal-widgethandle:hover { color: var(--dsh-cal-accent); background: var(--dsh-cal-hover); }
 .dsh-cal-widgethandle:active { cursor: grabbing; }
 .dsh-cal-widgettitle { font-size: 13px; font-weight: 700; color: var(--dsh-cal-text); }
 .dsh-cal-widgetnav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
 .dsh-cal-widgetnav .dsh-cal-navbtn { padding: 2px 8px; font-size: 11px; }
 .dsh-cal-dragghost {
-  position: fixed; z-index: 9998; pointer-events: none; background: var(--dsh-cal-card);
+  position: fixed; z-index: 9998; pointer-events: none; background: var(--dsh-cal-card-raised);
   border: 1px solid var(--dsh-cal-accent); border-radius: 10px; padding: 8px 14px; font-size: 12px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55); transform: translate(-50%, -140%);
+  box-shadow: var(--dsh-cal-shadow); transform: translate(-50%, -140%);
 }
 .dsh-cal-layoutbtn {
   background: transparent; color: var(--dsh-cal-muted); border: 1px solid var(--dsh-cal-border);
@@ -156,12 +164,12 @@ export const CALENDAR_CSS = `
 }
 .dsh-cal-layoutbtn:hover { color: var(--dsh-cal-text); border-color: var(--dsh-cal-accent); }
 .dsh-cal-overlay {
-  position: fixed; inset: 0; z-index: 9997; background: rgba(0, 0, 0, 0.5);
+  position: fixed; inset: 0; z-index: 9997; background: var(--dsw-alias-bg-mask-1, rgba(0, 0, 0, 0.5));
   display: flex; align-items: center; justify-content: center;
 }
 .dsh-cal-dialog {
-  background: #1c2129; border: 1px solid var(--dsh-cal-border); border-radius: 14px;
-  padding: 18px 20px; min-width: 280px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  background: var(--dsh-cal-card-raised); border: 1px solid var(--dsh-cal-border); border-radius: 14px;
+  padding: 18px 20px; min-width: 280px; box-shadow: var(--dsh-cal-shadow);
 }
 .dsh-cal-dialog h3 { margin: 0 0 6px; font-size: 15px; }
 .dsh-cal-dialog .tip { font-size: 11px; color: var(--dsh-cal-muted); margin-bottom: 12px; }
@@ -171,9 +179,9 @@ export const CALENDAR_CSS = `
 
 /* ---- tooltip ---- */
 .dsh-cal-tip {
-  position: fixed; z-index: 9999; background: #1c2129; border: 1px solid var(--dsh-cal-border);
+  position: fixed; z-index: 9999; background: var(--dsh-cal-card-raised); border: 1px solid var(--dsh-cal-border);
   border-radius: 10px; padding: 8px 12px; font-size: 12px; pointer-events: none;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0; transform: translateY(4px); transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: var(--dsh-cal-shadow); opacity: 0; transform: translateY(4px); transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .dsh-cal-tip.show { opacity: 1; transform: translateY(0); }
 .dsh-cal-tip .date { color: var(--dsh-cal-muted); font-size: 11px; margin-bottom: 3px; }
