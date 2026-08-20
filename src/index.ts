@@ -16,6 +16,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import { Config as ConfigSchema, type Config } from './config.ts'
 import { createCalendarProjectionDefinition } from './projection.ts'
+import { warmColdSessions } from './warmup.ts'
 
 export type * from './types.ts'
 
@@ -27,11 +28,13 @@ export const inject = ['sessionProjections']
 export { ConfigSchema as Config }
 
 /**
- * Register the `calendar` unit; the registration is an effect on this
- * plugin's fiber, so unloading removes the key.
+ * Register the `calendar` unit and warm the projection cache for persisted
+ * sessions; both are effects on this plugin's fiber, so unloading removes
+ * the key and aborts the warm-up.
  * @param ctx - registrant context carrying the projection registry.
  * @param config - fold bounds from the composition (cordis.patch.yml).
  */
 export function apply(ctx: Context, config: Config): void {
   ctx.sessionProjections.register(createCalendarProjectionDefinition(config))
+  warmColdSessions(ctx)
 }

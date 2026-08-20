@@ -46,6 +46,19 @@ export function parseDateKey(key: string): Date {
   return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1)
 }
 
+/** Display name of a workspace from its cwd path (last non-empty segment). */
+export function workspaceTitleOf(cwd: string): string {
+  const parts = cwd.split(/[/\\]/).filter(Boolean)
+  return parts[parts.length - 1] ?? ''
+}
+
+/** Stable hue (0..360) for a session id — the same session keeps its color across days. */
+export function sessionHue(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+  return h % 360
+}
+
 /** Aggregate session rows into a day map (empty map when no rows carry values). */
 export function aggregateDays(rows: readonly SessionRow[]): Map<string, DayAgg> {
   const out = new Map<string, DayAgg>()

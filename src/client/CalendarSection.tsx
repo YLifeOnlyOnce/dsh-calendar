@@ -1,10 +1,10 @@
 /**
- * The Calendar settings section: the dsh-calendar page shell. Owns the
- * view switcher (year / month / day), the date cursor and navigation, the
- * range-scoped stats cards (decrypt-reveal headline, count-up numbers), and
- * mounts the active view with a remount key so each view's entry animation
- * replays on switch. Data comes from the standard `useSessions` global hook
- * (framework-injected for every root-scope slot).
+ * The Calendar settings section: a dashboard of draggable widgets. Each
+ * calendar view — stats, year heatmap, 7-day timeline, day timeline, month
+ * grid — is an independent card the user can reorder by dragging the ⠿
+ * handle, hide/show from the ⚙ layout dialog, and navigate with its own mini
+ * controls around a shared focus day. Layout preferences persist to
+ * localStorage; data comes from the standard `useSessions` global hook.
  *
  * @module dsh-calendar/client/CalendarSection
  */
@@ -14,16 +14,14 @@ import type { ReactNode } from 'react'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 import type { CalendarKey, Translator } from './locales.ts'
-import {
-  aggregateDays, countUp, dateKey, fmtDuration, parseDateKey,
-  type SessionRow,
-} from './useCalendarData.ts'
+import { aggregateDays, countUp, dateKey, fmtDuration, parseDateKey, type SessionRow } from './useCalendarData.ts'
 import { DecryptText } from './decrypt.tsx'
 import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
+import { WeekView } from './WeekView.tsx'
 import { DayView } from './DayView.tsx'
-
-type View = 'year' | 'month' | 'day'
+import { Widget } from './Widget.tsx'
+import { useWidgetLayout, WIDGET_IDS, type WidgetId } from './useWidgetLayout.ts'
 
 /** Props delivered by the slot outlet: standard hooks + the locale seat. */
 export interface CalendarSectionProps {
@@ -31,28 +29,11 @@ export interface CalendarSectionProps {
   t: Translator
 }
 
-function monthLabel(d: Date): string {
-  return `${d.getFullYear()}年${d.getMonth() + 1}月`
-}
-
-function dayLabel(d: Date): string {
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-}
-
-/** Range text of the cursor under the active view. */
-function rangeText(view: View, cursor: Date): string {
-  if (view === 'year') return String(cursor.getFullYear())
-  if (view === 'month') return monthLabel(cursor)
-  return dayLabel(cursor)
-}
-
-/** Shift the cursor by one unit of the active view. */
-function shiftCursor(view: View, cursor: Date, delta: number): Date {
-  const d = new Date(cursor)
-  if (view === 'year') d.setFullYear(d.getFullYear() + delta)
-  else if (view === 'month') d.setMonth(d.getMonth() + delta)
-  else d.setDate(d.getDate() + delta)
-  return d
+/** First day of the 7-day window ending on `d`. */
+function weekStartOf(d: Date): Date {
+  const out = new Date(d)
+  out.setDate(d.getDate() - 6)
+  return out
 }
 
 /** Count-up integer card. */
@@ -88,92 +69,178 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
   const days = useMemo(() => aggregateDays(rows), [rows])
   const hasData = useMemo(() => rows.some(r => r.value !== undefined), [rows])
 
-  const [view, setView] = useState<View>('year')
-  const [cursor, setCursor] = useState(() => new Date())
+  // Shared focus day (all widgets navigate around it; year/month clicks drill into it).
+  const [focusDay, setFocusDay] = useState(() => dateKey(new Date()))
+  const focus = parseDateKey(focusDay)
 
-  // Range-scoped stats for the stats cards.
-  const stats = useMemo(() => {
-    const prefix = view === 'year' ? String(cursor.getFullYear())
-      : view === 'month' ? dateKey(cursor).slice(0, 7)
-        : dateKey(cursor)
+  // Widget layout (order + visibility), persisted to localStorage.
+  const layout = useWidgetLayout()
+  const [layoutOpen, setLayoutOpen] = useState(false)
+
+  // Drag lifecycle: window-level pointer tracking while a drag is active.
+  useEffect(() => {
+    if (!layout.dragging) return
+    const move = (e: PointerEvent): void => layout.moveDrag(e.clientX, e.clientY)
+    const up = (): void => layout.endDrag()
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    return () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+  }, [layout.dragging])
+
+  const goToday = (): void => setFocusDay(dateKey(new Date()))
+  const shiftDays = (n: number): void => {
+    const d = parseDateKey(focusDay)
+    d.setDate(d.getDate() + n)
+    setFocusDay(dateKey(d))
+  }
+  const shiftMonths = (n: number): void => {
+    const d = parseDateKey(focusDay)
+    d.setMonth(d.getMonth() + n)
+    setFocusDay(dateKey(d))
+  }
+  const shiftYears = (n: number): void => {
+    const d = parseDateKey(focusDay)
+    d.setFullYear(d.getFullYear() + n)
+    setFocusDay(dateKey(d))
+  }
+
+  // All-time totals for the stats widget.
+  const totals = useMemo(() => {
     let activeMs = 0
     let turns = 0
     let tools = 0
     const sessionSet = new Set<string>()
-    for (const [key, agg] of days) {
-      const matches = view === 'year' ? key.startsWith(prefix)
-        : view === 'month' ? key.startsWith(prefix)
-          : key === prefix
-      if (!matches) continue
+    for (const agg of days.values()) {
       activeMs += agg.activeMs
       turns += agg.turns
       tools += agg.tools
       for (const s of agg.sessions) sessionSet.add(s)
     }
     return { activeMs, sessions: sessionSet.size, turns, tools }
-  }, [days, view, cursor])
+  }, [days])
 
-  const rangeStatKey: CalendarKey = view === 'year' ? 'stat.thisYear' : view === 'month' ? 'stat.thisMonth' : 'stat.today'
-  const rangeKey = `${view}:${rangeText(view, cursor)}`
+  const nav = (onPrev: () => void, onNext: () => void): ReactNode => (
+    <>
+      <button type="button" className="dsh-cal-navbtn" onClick={onPrev}>‹</button>
+      <button type="button" className="dsh-cal-navbtn" onClick={onNext}>›</button>
+      <button type="button" className="dsh-cal-navbtn" onClick={goToday}>{t('today')}</button>
+    </>
+  )
+
+  const titles: Record<WidgetId, string> = {
+    stats: t('widget.stats'),
+    year: t('widget.year'),
+    week: t('widget.week'),
+    day: t('widget.day'),
+    month: t('widget.month'),
+  }
+
+  const widgetBody = (id: WidgetId): ReactNode => {
+    switch (id) {
+      case 'stats':
+        return (
+          <div className="dsh-cal-stats" style={{ marginBottom: 0 }}>
+            <div className="dsh-cal-stat">
+              <div className="label">{t('stats.active')}</div>
+              <div className="value mono"><DecryptText text={fmtDuration(totals.activeMs)} active /></div>
+            </div>
+            <div className="dsh-cal-stat">
+              <div className="label">{t('stats.sessions')}</div>
+              <CountUpNumber value={totals.sessions} active />
+            </div>
+            <div className="dsh-cal-stat">
+              <div className="label">{t('stats.turns')}</div>
+              <CountUpNumber value={totals.turns} active />
+            </div>
+            <div className="dsh-cal-stat">
+              <div className="label">{t('stats.tools')}</div>
+              <CountUpNumber value={totals.tools} active />
+            </div>
+          </div>
+        )
+      case 'year':
+        return <YearView days={days} year={focus.getFullYear()} active onPickDay={setFocusDay} t={t} />
+      case 'month':
+        return <MonthView days={days} month={focus} active onPickDay={setFocusDay} t={t} />
+      case 'week':
+        return <WeekView rows={rows} weekStart={weekStartOf(focus)} active t={t} />
+      case 'day':
+        return <DayView rows={rows} date={focusDay} active t={t} />
+    }
+  }
+
+  const widgetNav: Record<WidgetId, ReactNode | undefined> = {
+    stats: undefined,
+    year: nav(() => shiftYears(-1), () => shiftYears(1)),
+    month: nav(() => shiftMonths(-1), () => shiftMonths(1)),
+    week: nav(() => shiftDays(-7), () => shiftDays(7)),
+    day: nav(() => shiftDays(-1), () => shiftDays(1)),
+  }
 
   return (
     <div className="dsh-cal-root">
       <div className="dsh-cal-header">
         <h2 className="dsh-cal-title">
-          <DecryptText text={rangeText(view, cursor)} active />
-          <span style={{ color: 'var(--dsh-cal-muted)', fontSize: 12, marginLeft: 8 }}>{t(rangeStatKey)}</span>
+          <DecryptText text={t('nav')} active />
+          <span style={{ color: 'var(--dsh-cal-muted)', fontSize: 12, marginLeft: 8 }}>{t('stat.today')}</span>
         </h2>
-        <div className="dsh-cal-views">
-          {(['year', 'month', 'day'] as const).map(v => (
-            <button key={v} type="button" className={`dsh-cal-viewbtn${view === v ? ' active' : ''}`} onClick={() => setView(v)}>
-              {t(`view.${v}` as CalendarKey)}
-            </button>
-          ))}
-        </div>
-        <div className="dsh-cal-nav">
-          <button type="button" className="dsh-cal-navbtn" onClick={() => setCursor(c => shiftCursor(view, c, -1))}>‹</button>
-          <span className="dsh-cal-range">{rangeText(view, cursor)}</span>
-          <button type="button" className="dsh-cal-navbtn" onClick={() => setCursor(c => shiftCursor(view, c, 1))}>›</button>
-          <button type="button" className="dsh-cal-navbtn primary" onClick={() => setCursor(new Date())}>{t('today')}</button>
-        </div>
-      </div>
-
-      <div className="dsh-cal-stats">
-        <div className="dsh-cal-stat">
-          <div className="label">{t('stats.active')} · {t(rangeStatKey)}</div>
-          <div className="value mono">
-            <DecryptText text={fmtDuration(stats.activeMs)} active />
-          </div>
-        </div>
-        <div className="dsh-cal-stat">
-          <div className="label">{t('stats.sessions')}</div>
-          <CountUpNumber value={stats.sessions} active />
-        </div>
-        <div className="dsh-cal-stat">
-          <div className="label">{t('stats.turns')}</div>
-          <CountUpNumber value={stats.turns} active />
-        </div>
-        <div className="dsh-cal-stat">
-          <div className="label">{t('stats.tools')}</div>
-          <CountUpNumber value={stats.tools} active />
-        </div>
+        <button type="button" className="dsh-cal-layoutbtn" onClick={() => setLayoutOpen(true)}>⚙ {t('layout.title')}</button>
       </div>
 
       {hasData ? (
-        <div key={rangeKey} className="dsh-cal-viewport">
-          {view === 'year' && (
-            <YearView days={days} year={cursor.getFullYear()} active onPickDay={date => { setCursor(parseDateKey(date)); setView('day') }} t={t} />
-          )}
-          {view === 'month' && (
-            <MonthView days={days} month={cursor} active onPickDay={date => { setCursor(parseDateKey(date)); setView('day') }} t={t} />
-          )}
-          {view === 'day' && <DayView rows={rows} date={dateKey(cursor)} t={t} />}
+        <div className="dsh-cal-widgets">
+          {layout.order.map((id, index) => (
+            <Widget
+              key={id}
+              id={id}
+              index={index}
+              title={titles[id]}
+              nav={widgetNav[id]}
+              gridDragging={layout.dragging}
+              isDragging={layout.dragId === id}
+              onHandlePointerDown={layout.startDrag}
+            >
+              {widgetBody(id)}
+            </Widget>
+          ))}
         </div>
       ) : (
         <div className="dsh-cal-empty">
           <div style={{ fontSize: 26, marginBottom: 8 }}>🗓️</div>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{t('empty.title')}</div>
           <div>{t('empty.desc')}</div>
+        </div>
+      )}
+
+      {layout.dragging && layout.dragPos !== null && (
+        <div className="dsh-cal-dragghost" style={{ left: layout.dragPos.x, top: layout.dragPos.y }}>
+          {layout.dragId !== null ? titles[layout.dragId] : ''}
+        </div>
+      )}
+
+      {layoutOpen && (
+        <div className="dsh-cal-overlay" onClick={() => setLayoutOpen(false)}>
+          <div className="dsh-cal-dialog" onClick={e => e.stopPropagation()}>
+            <h3>{t('layout.title')}</h3>
+            <div className="tip">{t('layout.tip')}</div>
+            {WIDGET_IDS.map(id => (
+              <label key={id} className="row">
+                <input
+                  type="checkbox"
+                  checked={!layout.hidden.includes(id)}
+                  onChange={() => layout.toggle(id)}
+                />
+                {titles[id]}
+              </label>
+            ))}
+            <div className="actions">
+              <button type="button" className="dsh-cal-navbtn" onClick={layout.reset}>{t('layout.reset')}</button>
+              <button type="button" className="dsh-cal-navbtn primary" onClick={() => setLayoutOpen(false)}>{t('layout.done')}</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

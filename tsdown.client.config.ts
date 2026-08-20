@@ -15,6 +15,7 @@ export default defineConfig({
   sourcemap: true,
   clean: false,
   deps: {
+    alwaysBundle: ['animejs'],
     neverBundle: [
       'react',
       'react/jsx-runtime',

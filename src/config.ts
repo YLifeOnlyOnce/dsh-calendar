@@ -15,8 +15,8 @@ export const Config: Schema<Config> = Schema.object({
     .description('Per-day buckets retained per session (the year view needs ~400)')
     .default(400),
   intervalCap: Schema.number()
-    .description('Recent activity intervals retained per session (day-view precision)')
-    .default(300),
+    .description('Recent activity intervals retained per session (day/week view precision)')
+    .default(1000),
   hourProfileDays: Schema.number()
     .description('Days feeding each session\'s 24-hour activity profile')
     .default(30),

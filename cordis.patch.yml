@@ -11,5 +11,5 @@
       name: dsh-calendar
       config:
         keepDays: 400
-        intervalCap: 300
+        intervalCap: 1000
         hourProfileDays: 30
