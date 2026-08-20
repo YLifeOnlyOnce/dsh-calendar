@@ -52,7 +52,7 @@ function monthLabels(weeks: Week[], year: number): string[] {
 
 const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const LEVEL_CLASS = ['l0', 'l1', 'l2', 'l3', 'l4'] as const
+const LEVEL_CLASS = ['dsh-cal-l0', 'dsh-cal-l1', 'dsh-cal-l2', 'dsh-cal-l3', 'dsh-cal-l4'] as const
 
 export interface YearViewProps {
   days: Map<string, DayAgg>

@@ -14,7 +14,6 @@ import type { CalendarKey, Translator } from './locales.ts'
 import { dateKey, dayQuantiles, fmtDuration, heatLevel, type DayAgg } from './useCalendarData.ts'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const LEVEL_CLASS = ['l0', 'l1', 'l2', 'l3', 'l4'] as const
 
 export interface MonthViewProps {
   days: Map<string, DayAgg>
