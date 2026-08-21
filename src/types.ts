@@ -69,6 +69,10 @@ export interface CalendarDayBucket {
   readonly prompts: number
   /** Turns that ended in `error` or `interrupted` that day. */
   readonly failedTurns: number
+  /** Billed input tokens (uncached + cacheRead + cacheWrite), when the adapter reported usage. */
+  readonly tokensIn: number
+  /** Output tokens (incl. reasoning), when the adapter reported usage. */
+  readonly tokensOut: number
 }
 
 /** One activity interval or point on a session's timeline. */

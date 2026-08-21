@@ -234,11 +234,16 @@ export const CALENDAR_CSS = `
 .dsh-cal-cardbody { overflow: auto; max-height: 340px; }
 .dsh-cal-cardstats { display: flex; gap: 8px; }
 .dsh-cal-cardstats .cell {
-  flex: 1; display: flex; flex-direction: column; gap: 2px; background: var(--dsh-cal-card);
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; background: var(--dsh-cal-card);
   border: 1px solid var(--dsh-cal-border); border-radius: 8px; padding: 6px 8px;
+  overflow: hidden;
 }
-.dsh-cal-cardstats .label { font-size: 10px; color: var(--dsh-cal-muted); }
-.dsh-cal-cardstats b { font-size: 14px; font-variant-numeric: tabular-nums; }
+.dsh-cal-cardstats .label { font-size: 10px; color: var(--dsh-cal-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsh-cal-cardstats b { font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsh-cal-card .dsh-cal-cardstats { gap: 6px; }
+.dsh-cal-card .dsh-cal-cardstats .cell { padding: 5px 6px; }
+.dsh-cal-card .dsh-cal-cardstats .label { font-size: 9px; }
+.dsh-cal-card .dsh-cal-cardstats b { font-size: 12.5px; }
 .dsh-cal-cardempty { font-size: 11px; color: var(--dsh-cal-muted); padding: 8px 2px; }
 .dsh-cal-cardrem { display: flex; flex-direction: column; gap: 4px; }
 .dsh-cal-cardremrow {

@@ -47,6 +47,8 @@ const dayBucketSchema = z.object({
   llmMs: z.number().nonnegative(),
   prompts: z.number().int().nonnegative(),
   failedTurns: z.number().int().nonnegative(),
+  tokensIn: z.number().nonnegative(),
+  tokensOut: z.number().nonnegative(),
 }).strict()
 
 const intervalSchema = z.object({

@@ -19,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { Translator } from './locales.ts'
-import { dateKey, fmtDuration, mergeSegments, schedulesOn, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
+import { dateKey, fmtDuration, fmtTokens, mergeSegments, schedulesOn, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
 import type { CalendarInterval } from '../types'
 
 export interface DayViewProps {
@@ -63,6 +63,8 @@ interface SessionDay {
   activeMs: number
   turns: number
   tools: number
+  tokensIn: number
+  tokensOut: number
 }
 
 interface WorkspaceGroup {
@@ -173,6 +175,8 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
         activeMs: bucket.activeMs,
         turns: bucket.turns,
         tools: bucket.tools,
+        tokensIn: bucket.tokensIn,
+        tokensOut: bucket.tokensOut,
       }
       const arr = map.get(ws)
       if (arr === undefined) map.set(ws, [session])
@@ -272,6 +276,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
 
           {groups.map(group => {
             const groupActive = group.sessions.reduce((a, s) => a + s.activeMs, 0)
+            const groupTokens = group.sessions.reduce((a, s) => a + s.tokensIn + s.tokensOut, 0)
             return (
               <div key={group.name} className="dsh-cal-wsrow">
                 {/* Workspace header row: spans the full width (may extend past
@@ -282,6 +287,7 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
                   <span className="wsname">{group.name}</span>
                   <span className="wscount">
                     {t('tooltip.sessions', { count: group.sessions.length })} · {fmtDuration(groupActive)}
+                    {groupTokens > 0 && <> · {fmtTokens(groupTokens)}</>}
                   </span>
                 </div>
 

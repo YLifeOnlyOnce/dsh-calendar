@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { applyActivityEvent, activityView, createActivityState } from '../src/activity'
 import type { Config } from '../src/config'
 import {
-  assistantMessage, endSeed, stepEnd, stepStart, todoWrite, toolCall, toolResult,
+  assistantMessage, assistantMessageWithUsage, endSeed, stepEnd, stepStart, todoWrite, toolCall, toolResult,
   turnEnd, turnStart, userMessage,
 } from './events'
 
@@ -98,6 +98,28 @@ describe('counts', () => {
       turnEnd(4, t0 + 2 * MIN, 0),
     ])
     expect(activityView(state).days[0]).toMatchObject({ llmMs: 2 * MIN })
+  })
+
+  it('folds token usage with billed-input semantics and skips absent usage', () => {
+    const t0 = Date.UTC(2026, 0, 10, 16, 0, 0)
+    const state = fold([
+      turnStart(0, t0, 0),
+      stepStart(1, t0, 0, 0),
+      // 100 uncached + 40 cache-read + 10 cache-write → billed in = 150; out = 80
+      assistantMessageWithUsage(2, t0 + MIN, 0, 0, { input: 100, output: 80, cacheRead: 40, cacheWrite: 10 }),
+      stepEnd(3, t0 + MIN, 0, 0),
+      turnEnd(4, t0 + MIN, 0),
+      // Second turn: no usage reported → tokens stay 0 for that step.
+      turnStart(5, t0 + 2 * MIN, 1),
+      stepStart(6, t0 + 2 * MIN, 1, 0),
+      assistantMessage(7, t0 + 3 * MIN, 1, 0),
+      stepEnd(8, t0 + 3 * MIN, 1, 0),
+      turnEnd(9, t0 + 3 * MIN, 1),
+    ])
+    const bucket = activityView(state).days[0]
+    expect(bucket).toBeDefined()
+    expect(bucket).toMatchObject({ tokensIn: 150, tokensOut: 80 })
+    expect((bucket?.tokensIn ?? 0) + (bucket?.tokensOut ?? 0)).toBe(230)
   })
 
   it('counts human prompts as points and ignores synthetic ones', () => {

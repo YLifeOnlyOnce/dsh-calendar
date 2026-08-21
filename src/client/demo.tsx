@@ -20,7 +20,7 @@ import { RemindersView } from './RemindersView.tsx'
 import { TopSessionsView } from './TopSessionsView.tsx'
 import { DecryptText } from './decrypt.tsx'
 import {
-  aggregateDays, dateKey, sessionHue,
+  aggregateDays, dateKey, fmtTokens, sessionHue,
   type SessionRow,
 } from './useCalendarData.ts'
 import type { CalendarInterval, CalendarSchedule, CalendarValue } from '../types'
@@ -100,6 +100,8 @@ function makeValue(id: string, seed: number, end: Date): CalendarValue {
       llmMs: Math.round(activeMs * 0.75),
       prompts: rng() < 0.8 ? Math.max(1, Math.round(minutes / 18)) : 0,
       failedTurns: rng() < 0.3 ? Math.floor(rng() * 2) : 0,
+      tokensIn: Math.round(minutes * 320 + rng() * 4000),
+      tokensOut: Math.round(minutes * 140 + rng() * 1500),
     })
   }
   days.sort((a, b) => a.date.localeCompare(b.date))
@@ -228,6 +230,7 @@ function DemoApp() {
     // Headline decrypt + count-up.
     const values = [...days.values()]
     const total = values.reduce((a, d) => a + d.activeMs, 0)
+    const totalTokens = values.reduce((a, d) => a + d.tokensIn + d.tokensOut, 0)
     const sessions = new Set<string>()
     for (const d of values) for (const s of d.sessions) sessions.add(s)
     const stats = [
@@ -235,6 +238,7 @@ function DemoApp() {
       { el: document.querySelector('#demo-sessions'), to: sessions.size, format: (v: number) => String(Math.round(v)) },
       { el: document.querySelector('#demo-turns'), to: values.reduce((a, d) => a + d.turns, 0), format: (v: number) => String(Math.round(v)) },
       { el: document.querySelector('#demo-tools'), to: values.reduce((a, d) => a + d.tools, 0), format: (v: number) => String(Math.round(v)) },
+      { el: document.querySelector('#demo-tokens'), to: totalTokens, format: (v: number) => fmtTokens(v) },
     ]
     for (const { el, to, format } of stats) {
       if (el === null) continue
@@ -265,6 +269,7 @@ function DemoApp() {
         <div className="dsh-cal-stat"><div className="label">{t('stats.sessions')}</div><div className="value mono"><span id="demo-sessions">0</span></div></div>
         <div className="dsh-cal-stat"><div className="label">{t('stats.turns')}</div><div className="value mono"><span id="demo-turns">0</span></div></div>
         <div className="dsh-cal-stat"><div className="label">{t('stats.tools')}</div><div className="value mono"><span id="demo-tools">0</span></div></div>
+        <div className="dsh-cal-stat"><div className="label">{t('stats.tokens')}</div><div className="value mono"><span id="demo-tokens">0</span></div></div>
       </section>
 
       <section className="dsh-cal-demogrid">

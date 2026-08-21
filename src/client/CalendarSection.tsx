@@ -15,7 +15,7 @@ import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 import type { CalendarKey, Translator } from './locales.ts'
 import {
-  aggregateDays, countUp, dateKey, fmtDuration, parseDateKey,
+  aggregateDays, countUp, dateKey, fmtDuration, fmtTokens, parseDateKey,
   type SessionRow,
 } from './useCalendarData.ts'
 import { DecryptText } from './decrypt.tsx'
@@ -125,6 +125,8 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
     let activeMs = 0
     let turns = 0
     let tools = 0
+    let tokensIn = 0
+    let tokensOut = 0
     const sessionSet = new Set<string>()
     for (const [key, agg] of days) {
       let matches: boolean
@@ -141,9 +143,11 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
       activeMs += agg.activeMs
       turns += agg.turns
       tools += agg.tools
+      tokensIn += agg.tokensIn
+      tokensOut += agg.tokensOut
       for (const s of agg.sessions) sessionSet.add(s)
     }
-    return { activeMs, sessions: sessionSet.size, turns, tools }
+    return { activeMs, sessions: sessionSet.size, turns, tools, tokensIn, tokensOut }
   }, [days, view, cursor])
 
   const rangeStatKey: CalendarKey = view === 'year' ? 'stat.thisYear' : view === 'month' || view === 'top' ? 'stat.thisMonth' : view === 'reminders' ? 'stat.allTime' : 'stat.today'
@@ -195,6 +199,12 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
         <div className="dsh-cal-stat">
           <div className="label">{t('stats.tools')}</div>
           <CountUpNumber value={stats.tools} active />
+        </div>
+        <div className="dsh-cal-stat">
+          <div className="label">{t('stats.tokens')}</div>
+          <div className="value mono">
+            <DecryptText text={fmtTokens(stats.tokensIn + stats.tokensOut)} active />
+          </div>
         </div>
       </div>
 

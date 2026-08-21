@@ -89,6 +89,10 @@ export interface DayBucketState {
   llmMs: number
   prompts: number
   failedTurns: number
+  /** Billed input tokens (input + cacheRead + cacheWrite), when the adapter reported usage. */
+  tokensIn: number
+  /** Output tokens (incl. reasoning), when the adapter reported usage. */
+  tokensOut: number
 }
 
 /** The open turn interval; committed to buckets/ring on its `turn/end`. */
@@ -144,7 +148,7 @@ export function createActivityState(): ActivityState {
 /** Merge a delta into one day's bucket; creates the bucket on first touch. */
 function addToDay(state: ActivityState, dateKey: string, delta: Partial<DayBucketState>, config: Config): ActivityState {
   const existing = state.days[dateKey]
-  const bucket: DayBucketState = existing ?? { activeMs: 0, turns: 0, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0 }
+  const bucket: DayBucketState = existing ?? { activeMs: 0, turns: 0, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0, tokensIn: 0, tokensOut: 0 }
   const next: DayBucketState = {
     activeMs: bucket.activeMs + (delta.activeMs ?? 0),
     turns: bucket.turns + (delta.turns ?? 0),
@@ -152,6 +156,8 @@ function addToDay(state: ActivityState, dateKey: string, delta: Partial<DayBucke
     llmMs: bucket.llmMs + (delta.llmMs ?? 0),
     prompts: bucket.prompts + (delta.prompts ?? 0),
     failedTurns: bucket.failedTurns + (delta.failedTurns ?? 0),
+    tokensIn: bucket.tokensIn + (delta.tokensIn ?? 0),
+    tokensOut: bucket.tokensOut + (delta.tokensOut ?? 0),
   }
   let days = state.days
   let dayOrder = state.dayOrder
@@ -287,7 +293,17 @@ export function applyActivityEvent(state: ActivityState, event: SessionEvent, co
       const openSteps = { ...touched.openSteps }
       delete openSteps[key]
       const llmMs = Math.max(0, event.time - start)
-      return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs }, config)
+      const usage = event.data.usage
+      // Billed input = uncached + cacheRead + cacheWrite; output includes
+      // reasoning tokens. Absent usage (adapter reported none) adds 0.
+      const tokensIn = usage === undefined
+        ? 0
+        : usage.inputTokens + (usage.cacheReadTokens ?? 0) + (usage.cacheWriteTokens ?? 0)
+      const tokensOut = usage === undefined ? 0 : usage.outputTokens
+      if (tokensIn === 0 && tokensOut === 0) {
+        return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs }, config)
+      }
+      return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs, tokensIn, tokensOut }, config)
     }
 
     case 'step/end': {

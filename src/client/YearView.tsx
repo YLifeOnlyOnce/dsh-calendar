@@ -11,7 +11,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { CalendarKey, Translator } from './locales.ts'
-import { dayQuantiles, fmtDuration, heatLevel, parseDateKey, type DayAgg } from './useCalendarData.ts'
+import { dayQuantiles, fmtDuration, fmtTokens, heatLevel, parseDateKey, type DayAgg } from './useCalendarData.ts'
 
 /** One week column; null cells are days outside the year. */
 type Week = Array<Date | null>
@@ -167,6 +167,11 @@ export function YearView({ days, year, active, onPickDay, t }: YearViewProps): R
               <>
                 <div className="line"><b>{fmtDuration(agg.activeMs)}</b>&nbsp;{t('stats.active')}</div>
                 <div className="line">{t('tooltip.turns', { count: agg.turns })} · {t('tooltip.tools', { count: agg.tools })} · {t('tooltip.prompts', { count: agg.prompts })}</div>
+                {agg.tokensIn + agg.tokensOut > 0 && (
+                  <div className="line">
+                    {t('tooltip.tokens', { count: fmtTokens(agg.tokensIn + agg.tokensOut) })} · {t('tooltip.tokensIn', { count: fmtTokens(agg.tokensIn) })} · {t('tooltip.tokensOut', { count: fmtTokens(agg.tokensOut) })}
+                  </div>
+                )}
                 <div className="line">{t('tooltip.sessions', { count: agg.sessions.size })}</div>
               </>
             )

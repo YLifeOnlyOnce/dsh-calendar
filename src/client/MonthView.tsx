@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { CalendarKey, Translator } from './locales.ts'
-import { dateKey, dayQuantiles, fmtDuration, heatLevel, type DayAgg } from './useCalendarData.ts'
+import { dateKey, dayQuantiles, fmtDuration, fmtTokens, heatLevel, type DayAgg } from './useCalendarData.ts'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -94,7 +94,10 @@ export function MonthView({ days, month, active, onPickDay, t }: MonthViewProps)
               {agg !== undefined && agg.activeMs > 0 && (
                 <>
                   <div className="amt">{fmtDuration(agg.activeMs)}</div>
-                  <div className="sub">{t('tooltip.turns', { count: agg.turns })}</div>
+                  <div className="sub">
+                    {t('tooltip.turns', { count: agg.turns })}
+                    {agg.tokensIn + agg.tokensOut > 0 && <> · {fmtTokens(agg.tokensIn + agg.tokensOut)}</>}
+                  </div>
                   <div className="heatbar" style={{ opacity: 0.15 + level * 0.18 }} />
                 </>
               )}
@@ -113,6 +116,11 @@ export function MonthView({ days, month, active, onPickDay, t }: MonthViewProps)
               <>
                 <div className="line"><b>{fmtDuration(agg.activeMs)}</b>&nbsp;{t('stats.active')}</div>
                 <div className="line">{t('tooltip.turns', { count: agg.turns })} · {t('tooltip.tools', { count: agg.tools })}</div>
+                {agg.tokensIn + agg.tokensOut > 0 && (
+                  <div className="line">
+                    {t('tooltip.tokens', { count: fmtTokens(agg.tokensIn + agg.tokensOut) })} · {t('tooltip.tokensIn', { count: fmtTokens(agg.tokensIn) })} · {t('tooltip.tokensOut', { count: fmtTokens(agg.tokensOut) })}
+                  </div>
+                )}
                 <div className="line">{t('tooltip.sessions', { count: agg.sessions.size })}</div>
               </>
             )

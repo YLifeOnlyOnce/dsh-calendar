@@ -29,6 +29,10 @@ export interface DayAgg {
   llmMs: number
   prompts: number
   failedTurns: number
+  /** Billed input tokens across sessions that day. */
+  tokensIn: number
+  /** Output tokens across sessions that day. */
+  tokensOut: number
   sessions: Set<string>
 }
 
@@ -119,7 +123,7 @@ export function aggregateDays(rows: readonly SessionRow[]): Map<string, DayAgg> 
     for (const day of value.days) {
       let agg = out.get(day.date)
       if (agg === undefined) {
-        agg = { date: day.date, activeMs: 0, turns: 0, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0, sessions: new Set() }
+        agg = { date: day.date, activeMs: 0, turns: 0, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0, tokensIn: 0, tokensOut: 0, sessions: new Set() }
         out.set(day.date, agg)
       }
       agg.activeMs += day.activeMs
@@ -128,6 +132,8 @@ export function aggregateDays(rows: readonly SessionRow[]): Map<string, DayAgg> 
       agg.llmMs += day.llmMs
       agg.prompts += day.prompts
       agg.failedTurns += day.failedTurns
+      agg.tokensIn += day.tokensIn
+      agg.tokensOut += day.tokensOut
       agg.sessions.add(row.id)
     }
   }
@@ -141,6 +147,20 @@ export function fmtDuration(ms: number): string {
   const h = Math.floor(ms / 3_600_000)
   const m = Math.round((ms % 3_600_000) / 60_000)
   return m === 0 ? `${h}h` : `${h}h ${m}m`
+}
+
+/** Compact token count, e.g. "1.24M" / "890K" / "12K" / "340". */
+export function fmtTokens(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return '0'
+  if (n >= 1_000_000) {
+    const v = n / 1_000_000
+    return `${v >= 10 ? Math.round(v) : v.toFixed(2).replace(/\.?0+$/, '')}M`
+  }
+  if (n >= 1_000) {
+    const v = n / 1_000
+    return `${v >= 10 ? Math.round(v) : v.toFixed(1).replace(/\.0$/, '')}K`
+  }
+  return String(Math.round(n))
 }
 
 /** Quantile heat level 0..4 for one day's active time within a year. */
@@ -265,6 +285,8 @@ export interface SessionSum {
   activeMs: number
   turns: number
   tools: number
+  tokensIn: number
+  tokensOut: number
 }
 
 /**
@@ -280,14 +302,18 @@ export function sumSessionsInRange(rows: readonly SessionRow[], fromKey: string,
     let activeMs = 0
     let turns = 0
     let tools = 0
+    let tokensIn = 0
+    let tokensOut = 0
     for (const day of value.days) {
       if (day.date < fromKey || day.date > toKey) continue
       activeMs += day.activeMs
       turns += day.turns
       tools += day.tools
+      tokensIn += day.tokensIn
+      tokensOut += day.tokensOut
     }
     if (activeMs === 0 && turns === 0 && tools === 0) continue
-    out.push({ id: row.id, title: row.title, cwd: row.cwd, running: row.running, activeMs, turns, tools })
+    out.push({ id: row.id, title: row.title, cwd: row.cwd, running: row.running, activeMs, turns, tools, tokensIn, tokensOut })
   }
   return out.sort((a, b) => b.activeMs - a.activeMs)
 }

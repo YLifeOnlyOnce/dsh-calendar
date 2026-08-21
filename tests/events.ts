@@ -41,6 +41,21 @@ export function assistantMessage(seq: number, time: number, turn: number, step: 
   return ev('assistant/message', seq, time, { turn, step, message: { id: 'm', role: 'assistant', content: [], source: { kind: 'model', model: 'test' } } })
 }
 
+/** `assistant/message` carrying token usage (input/output/cache). */
+export function assistantMessageWithUsage(seq: number, time: number, turn: number, step: number, usage: { input: number; output: number; cacheRead?: number; cacheWrite?: number }): SessionEvent {
+  return ev('assistant/message', seq, time, {
+    turn,
+    step,
+    message: { id: 'm', role: 'assistant', content: [], source: { kind: 'model', model: 'test' } },
+    usage: {
+      inputTokens: usage.input,
+      outputTokens: usage.output,
+      ...(usage.cacheRead !== undefined ? { cacheReadTokens: usage.cacheRead } : {}),
+      ...(usage.cacheWrite !== undefined ? { cacheWriteTokens: usage.cacheWrite } : {}),
+    },
+  })
+}
+
 /** `tool/call` with `callId` at `time` (turn `turn`, step `step`). */
 export function toolCall(seq: number, time: number, turn: number, step: number, callId: string): SessionEvent {
   return ev('tool/call', seq, time, { turn, step, callId, name: 'bash', arguments: '{}' })

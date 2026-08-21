@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import { collectReminders, schedulesOn, sumSessionsInRange } from '../src/client/useCalendarData'
-import type { CalendarValue, SessionRow } from '../src/client/useCalendarData'
+import { collectReminders, schedulesOn, sumSessionsInRange, type SessionRow } from '../src/client/useCalendarData'
+import type { CalendarValue } from '../src/types'
 import type { CalendarSchedule } from '../src/types'
 
 const MIN = 60_000
@@ -79,17 +79,17 @@ describe('sumSessionsInRange', () => {
     const rows = [
       row('a', {
         days: [
-          { date: '2027-01-01', activeMs: 2 * HOUR, turns: 10, tools: 20, llmMs: 0, prompts: 2, failedTurns: 0 },
-          { date: '2027-01-03', activeMs: HOUR, turns: 5, tools: 9, llmMs: 0, prompts: 1, failedTurns: 0 },
-          { date: '2027-02-01', activeMs: 5 * HOUR, turns: 30, tools: 60, llmMs: 0, prompts: 4, failedTurns: 0 },
+          { date: '2027-01-01', activeMs: 2 * HOUR, turns: 10, tools: 20, llmMs: 0, prompts: 2, failedTurns: 0, tokensIn: 0, tokensOut: 0 },
+          { date: '2027-01-03', activeMs: HOUR, turns: 5, tools: 9, llmMs: 0, prompts: 1, failedTurns: 0, tokensIn: 0, tokensOut: 0 },
+          { date: '2027-02-01', activeMs: 5 * HOUR, turns: 30, tools: 60, llmMs: 0, prompts: 4, failedTurns: 0, tokensIn: 0, tokensOut: 0 },
         ],
       }),
       row('b', {
         days: [
-          { date: '2027-01-02', activeMs: 3 * HOUR, turns: 15, tools: 12, llmMs: 0, prompts: 3, failedTurns: 0 },
+          { date: '2027-01-02', activeMs: 3 * HOUR, turns: 15, tools: 12, llmMs: 0, prompts: 3, failedTurns: 0, tokensIn: 0, tokensOut: 0 },
         ],
       }),
-      row('c', { days: [{ date: '2026-12-31', activeMs: 9 * HOUR, turns: 40, tools: 80, llmMs: 0, prompts: 5, failedTurns: 0 }] }),
+      row('c', { days: [{ date: '2026-12-31', activeMs: 9 * HOUR, turns: 40, tools: 80, llmMs: 0, prompts: 5, failedTurns: 0, tokensIn: 0, tokensOut: 0 }] }),
     ]
     const sums = sumSessionsInRange(rows, '2027-01-01', '2027-01-31')
     // Stable sort: both sessions total 3h in range, insertion order (a, b) holds.
@@ -103,7 +103,7 @@ describe('sumSessionsInRange', () => {
 
   it('drops sessions with no activity in range', () => {
     const rows = [
-      row('a', { days: [{ date: '2027-01-01', activeMs: HOUR, turns: 1, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0 }] }),
+      row('a', { days: [{ date: '2027-01-01', activeMs: HOUR, turns: 1, tools: 0, llmMs: 0, prompts: 0, failedTurns: 0, tokensIn: 0, tokensOut: 0 }] }),
     ]
     const sums = sumSessionsInRange(rows, '2027-02-01', '2027-02-28')
     expect(sums).toEqual([])

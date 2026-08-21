@@ -10,7 +10,7 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { Translator } from './locales.ts'
-import { fmtDuration, sessionHue, sumSessionsInRange, type SessionRow } from './useCalendarData.ts'
+import { fmtDuration, fmtTokens, sessionHue, sumSessionsInRange, type SessionRow } from './useCalendarData.ts'
 
 export interface TopSessionsViewProps {
   rows: readonly SessionRow[]
@@ -64,7 +64,10 @@ export function TopSessionsView({ rows, monthKey, active, onOpenSession, t }: To
             <span className="barwrap"><span className="bar" style={{ width: `${Math.max(4, (sum.activeMs / maxActive) * 100)}%` }} /></span>
             <span className="nums">
               <b>{fmtDuration(sum.activeMs)}</b>
-              <span className="meta">{t('top.turns', { count: sum.turns })} · {t('top.tools', { count: sum.tools })}</span>
+              <span className="meta">
+                {t('top.turns', { count: sum.turns })} · {t('top.tools', { count: sum.tools })}
+                {sum.tokensIn + sum.tokensOut > 0 && <> · {fmtTokens(sum.tokensIn + sum.tokensOut)}</>}
+              </span>
             </span>
           </div>
         ))}

@@ -14,7 +14,7 @@ import type { ReactNode } from 'react'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 import type { Translator } from './locales.ts'
-import { aggregateDays, collectReminders, countUp, dateKey, fmtDuration, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
+import { aggregateDays, collectReminders, countUp, dateKey, fmtDuration, fmtTokens, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
 import { useCardLayout, type CardId, type CardPosition } from './useCardLayout.ts'
 import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
@@ -125,16 +125,19 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
         let activeMs = 0
         let turns = 0
         let tools = 0
+        let tokens = 0
         for (const agg of days.values()) {
           activeMs += agg.activeMs
           turns += agg.turns
           tools += agg.tools
+          tokens += agg.tokensIn + agg.tokensOut
         }
         return (
           <div className="dsh-cal-cardstats">
             <div className="cell"><span className="label">{t('stats.active')}</span><b>{fmtDuration(activeMs)}</b></div>
             <div className="cell"><span className="label">{t('stats.turns')}</span><b>{turns}</b></div>
             <div className="cell"><span className="label">{t('stats.tools')}</span><b>{tools}</b></div>
+            <div className="cell"><span className="label">{t('stats.tokens')}</span><b>{fmtTokens(tokens)}</b></div>
           </div>
         )
       }
