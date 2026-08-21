@@ -14,7 +14,7 @@ import type { ReactNode } from 'react'
 import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionListState } from '@deepseek-ai/dsh-client-runtime/client'
 import type { Translator } from './locales.ts'
-import { aggregateDays, countUp, dateKey, fmtDuration, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
+import { aggregateDays, collectReminders, countUp, dateKey, fmtDuration, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
 import { useCardLayout, type CardId, type CardPosition } from './useCardLayout.ts'
 import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
@@ -116,6 +116,7 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
     week: t('card.week'),
     day: t('card.day'),
     month: t('card.month'),
+    reminders: t('view.reminders'),
   }
 
   const cardBody = (id: CardId): ReactNode => {
@@ -145,6 +146,35 @@ export function CardOverlay(props: CardOverlayProps): ReactNode {
         return <WeekView rows={rows} weekStart={new Date(today.getTime() - 6 * 86_400_000)} active={false} compact onOpenSession={sessionsService !== undefined ? id => sessionsService.open(id) : undefined} t={t} />
       case 'day':
         return <DayView rows={rows} date={todayKey} active={false} compact onOpenSession={sessionsService !== undefined ? id => sessionsService.open(id) : undefined} t={t} />
+      case 'reminders': {
+        const model = collectReminders(rows, Date.now())
+        const list = [...model.overdue, ...model.upcoming].slice(0, 5)
+        if (list.length === 0) {
+          return <div className="dsh-cal-cardempty">⏰ {t('reminders.empty')}</div>
+        }
+        const fmt = (isoValue: string): string => {
+          const d = new Date(isoValue)
+          if (Number.isNaN(d.getTime())) return isoValue
+          return d.toLocaleString(undefined, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+        }
+        return (
+          <div className="dsh-cal-cardrem">
+            {list.map(item => (
+              <div
+                key={`${item.sessionId}-${item.schedule.id}`}
+                className={`dsh-cal-cardremrow${item.sessionId === '' ? '' : ' clickable'}`}
+                onClick={sessionsService !== undefined ? () => sessionsService.open(item.sessionId) : undefined}
+                title={item.schedule.prompt}
+              >
+                <span className="ic">⏰</span>
+                <span className="txt" title={item.schedule.prompt}>{item.schedule.prompt}</span>
+                <span className="when">{fmt(item.schedule.scheduledAt)}</span>
+              </div>
+            ))}
+            {model.fired.length > 0 && <div className="dsh-cal-cardremfoot">✅ {t('reminders.fired')} × {model.fired.length}</div>}
+          </div>
+        )
+      }
     }
   }
 

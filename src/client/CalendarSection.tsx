@@ -23,9 +23,11 @@ import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
 import { WeekView } from './WeekView.tsx'
 import { DayView } from './DayView.tsx'
+import { RemindersView } from './RemindersView.tsx'
+import { TopSessionsView } from './TopSessionsView.tsx'
 import { useCardLayout, CARD_IDS } from './useCardLayout.ts'
 
-type View = 'year' | 'month' | 'week' | 'day'
+type View = 'year' | 'month' | 'week' | 'day' | 'reminders' | 'top'
 
 /** Props delivered by the slot outlet: standard hooks + the locale seat. */
 export interface CalendarSectionProps {
@@ -60,10 +62,12 @@ function weekLabel(d: Date): string {
 }
 
 /** Range text of the cursor under the active view. */
-function rangeText(view: View, cursor: Date): string {
+function rangeText(view: View, cursor: Date, t: Translator): string {
   if (view === 'year') return String(cursor.getFullYear())
   if (view === 'month') return monthLabel(cursor)
   if (view === 'week') return weekLabel(cursor)
+  if (view === 'reminders') return t('view.reminders')
+  if (view === 'top') return `${cursor.getFullYear()}年${cursor.getMonth() + 1}月`
   return dayLabel(cursor)
 }
 
@@ -71,9 +75,9 @@ function rangeText(view: View, cursor: Date): string {
 function shiftCursor(view: View, cursor: Date, delta: number): Date {
   const d = new Date(cursor)
   if (view === 'year') d.setFullYear(d.getFullYear() + delta)
-  else if (view === 'month') d.setMonth(d.getMonth() + delta)
+  else if (view === 'month' || view === 'top') d.setMonth(d.getMonth() + delta)
   else if (view === 'week') d.setDate(d.getDate() + delta * 7)
-  else d.setDate(d.getDate() + delta)
+  else if (view === 'day') d.setDate(d.getDate() + delta)
   return d
 }
 
@@ -117,23 +121,22 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
 
   // Range-scoped stats for the stats cards.
   const stats = useMemo(() => {
-    const prefix = view === 'year' ? String(cursor.getFullYear())
-      : view === 'month' ? dateKey(cursor).slice(0, 7)
-        : view === 'week' ? weekStartOf(cursor)
-          : undefined
+    const monthKey = dateKey(cursor).slice(0, 7)
     let activeMs = 0
     let turns = 0
     let tools = 0
     const sessionSet = new Set<string>()
     for (const [key, agg] of days) {
       let matches: boolean
-      if (view === 'year' || view === 'month') matches = key.startsWith(prefix as string)
+      if (view === 'year') matches = key.startsWith(String(cursor.getFullYear()))
+      else if (view === 'month' || view === 'top') matches = key.startsWith(monthKey)
       else if (view === 'week') {
-        const wkStart = prefix as Date
+        const wkStart = weekStartOf(cursor)
         const wkEnd = new Date(wkStart)
         wkEnd.setDate(wkStart.getDate() + 6)
         matches = key >= dateKey(wkStart) && key <= dateKey(wkEnd)
-      } else matches = key === dateKey(cursor)
+      } else if (view === 'reminders') matches = true
+      else matches = key === dateKey(cursor)
       if (!matches) continue
       activeMs += agg.activeMs
       turns += agg.turns
@@ -143,8 +146,8 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
     return { activeMs, sessions: sessionSet.size, turns, tools }
   }, [days, view, cursor])
 
-  const rangeStatKey: CalendarKey = view === 'year' ? 'stat.thisYear' : view === 'month' ? 'stat.thisMonth' : 'stat.today'
-  const rangeKey = `${view}:${rangeText(view, cursor)}`
+  const rangeStatKey: CalendarKey = view === 'year' ? 'stat.thisYear' : view === 'month' || view === 'top' ? 'stat.thisMonth' : view === 'reminders' ? 'stat.allTime' : 'stat.today'
+  const rangeKey = `${view}:${rangeText(view, cursor, t)}`
 
   /** Drill into a conversation: close the settings modal, then open the session. */
   const openSession = (id: string): void => {
@@ -156,11 +159,11 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
     <div className="dsh-cal-root">
       <div className="dsh-cal-header">
         <h2 className="dsh-cal-title">
-          <DecryptText text={rangeText(view, cursor)} active />
+          <DecryptText text={rangeText(view, cursor, t)} active />
           <span style={{ color: 'var(--dsh-cal-muted)', fontSize: 12, marginLeft: 8 }}>{t(rangeStatKey)}</span>
         </h2>
         <div className="dsh-cal-views">
-          {(['day', 'week', 'month', 'year'] as const).map(v => (
+          {(['day', 'week', 'month', 'year', 'reminders', 'top'] as const).map(v => (
             <button key={v} type="button" className={`dsh-cal-viewbtn${view === v ? ' active' : ''}`} onClick={() => setView(v)}>
               {t(`view.${v}` as CalendarKey)}
             </button>
@@ -168,7 +171,7 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
         </div>
         <div className="dsh-cal-nav">
           <button type="button" className="dsh-cal-navbtn" onClick={() => setCursor(c => shiftCursor(view, c, -1))}>‹</button>
-          <span className="dsh-cal-range">{rangeText(view, cursor)}</span>
+          <span className="dsh-cal-range">{rangeText(view, cursor, t)}</span>
           <button type="button" className="dsh-cal-navbtn" onClick={() => setCursor(c => shiftCursor(view, c, 1))}>›</button>
           <button type="button" className="dsh-cal-navbtn primary" onClick={() => setCursor(new Date())}>{t('today')}</button>
         </div>
@@ -207,6 +210,8 @@ export function CalendarSection(props: CalendarSectionProps): ReactNode {
             <WeekView rows={rows} weekStart={weekStartOf(cursor)} active onOpenSession={openSession} t={t} />
           )}
           {view === 'day' && <DayView rows={rows} date={dateKey(cursor)} active onOpenSession={openSession} t={t} />}
+          {view === 'reminders' && <RemindersView rows={rows} active onOpenSession={openSession} t={t} />}
+          {view === 'top' && <TopSessionsView rows={rows} monthKey={dateKey(cursor).slice(0, 7)} active onOpenSession={openSession} t={t} />}
         </div>
       ) : (
         <div className="dsh-cal-empty">

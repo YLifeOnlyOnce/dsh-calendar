@@ -8,7 +8,7 @@
 
 import { useMemo } from 'react'
 import { animate } from 'animejs'
-import type { CalendarInterval, CalendarValue } from '../types'
+import type { CalendarDispatch, CalendarInterval, CalendarSchedule, CalendarValue } from '../types'
 
 /** One session row's calendar-relevant facts. */
 export interface SessionRow {
@@ -181,4 +181,113 @@ export function countUp(el: HTMLElement, from: number, to: number, format: (v: n
     onUpdate: () => { el.textContent = format(state.v) },
   })
   return () => animation.cancel()
+}
+
+// ---------------------------------------------------------------------------
+// Reminders & top-sessions view models (from the `calendar` wire value)
+// ---------------------------------------------------------------------------
+
+/** One schedule row enriched with its owning session. */
+export interface ReminderRow {
+  sessionId: string
+  sessionTitle: string
+  /** The active schedule record. */
+  schedule: CalendarSchedule
+}
+
+/** One fired dispatch enriched with its owning session (prompt may be gone). */
+export interface FiredRow {
+  sessionId: string
+  sessionTitle: string
+  dispatch: CalendarDispatch
+}
+
+/** All reminders across sessions, split by status at `nowMs`. */
+export interface RemindersModel {
+  upcoming: ReminderRow[]
+  overdue: ReminderRow[]
+  fired: FiredRow[]
+}
+
+/** ISO `YYYY-MM-DD` (UTC) of an RFC 3339 timestamp — schedules are UTC. */
+export function utcDateKey(isoValue: string): string {
+  return isoValue.slice(0, 10)
+}
+
+/** Collect every session's schedules/dispatches into one status-split model. */
+export function collectReminders(rows: readonly SessionRow[], nowMs: number): RemindersModel {
+  const upcoming: ReminderRow[] = []
+  const overdue: ReminderRow[] = []
+  const fired: FiredRow[] = []
+  for (const row of rows) {
+    const value = row.value
+    if (value === undefined) continue
+    for (const schedule of value.schedules) {
+      const target = Date.parse(schedule.scheduledAt)
+      const item: ReminderRow = { sessionId: row.id, sessionTitle: row.title, schedule }
+      if (Number.isNaN(target) || target > nowMs) upcoming.push(item)
+      else overdue.push(item)
+    }
+    for (const dispatch of value.scheduleHistory) {
+      fired.push({ sessionId: row.id, sessionTitle: row.title, dispatch })
+    }
+  }
+  upcoming.sort((a, b) => Date.parse(a.schedule.scheduledAt) - Date.parse(b.schedule.scheduledAt))
+  overdue.sort((a, b) => Date.parse(a.schedule.scheduledAt) - Date.parse(b.schedule.scheduledAt))
+  fired.sort((a, b) => Date.parse(b.dispatch.firedAt) - Date.parse(a.dispatch.firedAt))
+  return { upcoming, overdue, fired }
+}
+
+/** Schedules that fire on a given LOCAL date (the day timeline is local). */
+export function schedulesOn(rows: readonly SessionRow[], dateKeyOf: string): ReminderRow[] {
+  const out: ReminderRow[] = []
+  for (const row of rows) {
+    const value = row.value
+    if (value === undefined) continue
+    for (const schedule of value.schedules) {
+      const d = new Date(schedule.scheduledAt)
+      if (Number.isNaN(d.getTime())) continue
+      if (dateKey(d) === dateKeyOf) {
+        out.push({ sessionId: row.id, sessionTitle: row.title, schedule })
+      }
+    }
+  }
+  out.sort((a, b) => Date.parse(a.schedule.scheduledAt) - Date.parse(b.schedule.scheduledAt))
+  return out
+}
+
+/** Per-session usage sums for the top-sessions view. */
+export interface SessionSum {
+  id: string
+  title: string
+  cwd: string
+  running: boolean
+  activeMs: number
+  turns: number
+  tools: number
+}
+
+/**
+ * Sum each session's usage over a date range (inclusive `fromKey`..`toKey`,
+ * local `YYYY-MM-DD`), sorted by active time descending. Sessions with no
+ * activity in range are dropped.
+ */
+export function sumSessionsInRange(rows: readonly SessionRow[], fromKey: string, toKey: string): SessionSum[] {
+  const out: SessionSum[] = []
+  for (const row of rows) {
+    const value = row.value
+    if (value === undefined) continue
+    let activeMs = 0
+    let turns = 0
+    let tools = 0
+    for (const day of value.days) {
+      if (day.date < fromKey || day.date > toKey) continue
+      activeMs += day.activeMs
+      turns += day.turns
+      tools += day.tools
+    }
+    if (activeMs === 0 && turns === 0 && tools === 0) continue
+    out.push({ id: row.id, title: row.title, cwd: row.cwd, running: row.running, activeMs, turns, tools })
+  }
+  return out.sort((a, b) => b.activeMs - a.activeMs)
 }

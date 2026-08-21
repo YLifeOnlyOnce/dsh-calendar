@@ -16,6 +16,8 @@ import { YearView } from './YearView.tsx'
 import { MonthView } from './MonthView.tsx'
 import { WeekView } from './WeekView.tsx'
 import { DayView } from './DayView.tsx'
+import { RemindersView } from './RemindersView.tsx'
+import { TopSessionsView } from './TopSessionsView.tsx'
 import { DecryptText } from './decrypt.tsx'
 import {
   aggregateDays, dateKey, sessionHue,
@@ -124,6 +126,7 @@ function makeValue(id: string, seed: number, end: Date): CalendarValue {
 
   // Recurring reminders.
   const schedules: CalendarSchedule[] = []
+  const scheduleHistory: CalendarValue['scheduleHistory'] = []
   const kinds: Array<CalendarSchedule['kind']> = ['at', 'every', 'after']
   const prompts = ['早上好，帮我梳理今天的关键任务', '检查一下依赖升级的影响', '汇总本周进展', '整理代码审查意见']
   for (let i = 0; i < Math.floor(rng() * 3); i++) {
@@ -137,6 +140,27 @@ function makeValue(id: string, seed: number, end: Date): CalendarValue {
     }
     schedules.push(sched)
   }
+  // One reminder fired today, so the day timeline shows a ⏰ marker.
+  if (rng() < 0.7) {
+    const fired = new Date(end)
+    fired.setHours(9 + Math.floor(rng() * 8), Math.floor(rng() * 60), 0, 0)
+    schedules.push({
+      id: `s${id}-today`,
+      kind: 'every',
+      prompt: '整理今日进展',
+      scheduledAt: iso(fired),
+      everySeconds: 86_400,
+      lastFiredAt: iso(fired),
+    })
+    scheduleHistory.push({ id: `s${id}-today`, kind: 'every', firedAt: iso(fired) })
+  }
+  // A couple of past dispatches for the history panel.
+  for (let i = 0; i < Math.floor(rng() * 2); i++) {
+    const past = new Date(end)
+    past.setDate(past.getDate() - (1 + i))
+    past.setHours(10, 0, 0, 0)
+    scheduleHistory.push({ id: `s${id}-p${i}`, kind: 'every', firedAt: iso(past) })
+  }
 
   const value: CalendarValue = {
     totalActiveMs,
@@ -147,7 +171,7 @@ function makeValue(id: string, seed: number, end: Date): CalendarValue {
       return hour.map(v => v / max)
     })(),
     schedules,
-    scheduleHistory: [],
+    scheduleHistory,
     ...(firstActivityAt !== undefined ? { firstActivityAt } : {}),
     ...(lastActivityAt !== undefined ? { lastActivityAt } : {}),
   }
@@ -263,6 +287,14 @@ function DemoApp() {
         <div className="dsh-cal-democard demo-month">
           <h3>🗂️ {t('card.month')}</h3>
           <MonthView days={days} month={today} active onPickDay={() => {}} t={t} />
+        </div>
+        <div className="dsh-cal-democard demo-reminders">
+          <h3>⏰ {t('view.reminders')}</h3>
+          <RemindersView rows={rows} active t={t} />
+        </div>
+        <div className="dsh-cal-democard demo-top">
+          <h3>🏆 {t('view.top')}</h3>
+          <TopSessionsView rows={rows} monthKey={todayKey.slice(0, 7)} active t={t} />
         </div>
       </section>
 

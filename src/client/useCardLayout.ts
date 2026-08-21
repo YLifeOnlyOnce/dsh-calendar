@@ -11,9 +11,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 /** Stable card ids (the settings checkboxes and the overlay share this set). */
-export type CardId = 'stats' | 'year' | 'week' | 'day' | 'month'
+export type CardId = 'stats' | 'year' | 'week' | 'day' | 'month' | 'reminders'
 
-export const CARD_IDS: readonly CardId[] = ['stats', 'year', 'week', 'day', 'month']
+export const CARD_IDS: readonly CardId[] = ['stats', 'year', 'week', 'day', 'month', 'reminders']
 
 const STORAGE_KEY = 'dsh-calendar.cards.v1'
 
@@ -41,6 +41,7 @@ function defaultPositions(): Record<CardId, CardPosition> {
     week: { x: vw - 320, y: vh - 420 },
     day: { x: vw - 420, y: vh - 380 },
     month: { x: vw - 320, y: vh - 420 },
+    reminders: { x: vw - 520, y: vh - 460 },
   }
 }
 

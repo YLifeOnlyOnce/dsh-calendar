@@ -19,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { animate, stagger } from 'animejs'
 import type { Translator } from './locales.ts'
-import { dateKey, fmtDuration, mergeSegments, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
+import { dateKey, fmtDuration, mergeSegments, schedulesOn, sessionHue, workspaceTitleOf, type SessionRow } from './useCalendarData.ts'
 import type { CalendarInterval } from '../types'
 
 export interface DayViewProps {
@@ -243,6 +243,32 @@ export function DayView({ rows, date, active, compact = false, onOpenSession, t 
               ))}
             </div>
           </div>
+
+          {/* Reminder band: ⏰ at each schedule firing on this day. */}
+          {(() => {
+            const marks = schedulesOn(rows, date)
+            if (marks.length === 0) return null
+            return (
+              <div className="dsh-cal-remband" style={{ width: contentW - labelW, left: labelW }}>
+                {marks.map((mark, i) => {
+                  const ms = Date.parse(mark.schedule.scheduledAt)
+                  const m = minutesOf(ms)
+                  const text = `${hhmm(ms)} ⏰ ${mark.schedule.prompt}`
+                  return (
+                    <span
+                      key={`${mark.sessionId}-${mark.schedule.id}-${i}`}
+                      className="dsh-cal-remmark"
+                      style={{ left: (m / 1440) * trackW }}
+                      onMouseEnter={e => showTip(text, e.clientX, e.clientY)}
+                      onMouseLeave={() => setTip(null)}
+                      onClick={onOpenSession !== undefined ? () => onOpenSession(mark.sessionId) : undefined}
+                      title={text}
+                    >⏰</span>
+                  )
+                })}
+              </div>
+            )
+          })()}
 
           {groups.map(group => {
             const groupActive = group.sessions.reduce((a, s) => a + s.activeMs, 0)
