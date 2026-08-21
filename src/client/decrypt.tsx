@@ -25,6 +25,9 @@ function randomGlyph(): string {
 /**
  * Render `text` with a one-shot decrypt-reveal animation when `active` is
  * true; renders the final text instantly otherwise (and after completion).
+ * When `text` changes the reveal re-runs, so live numbers (range stats,
+ * token totals) refresh on every update instead of freezing at the first
+ * value.
  * @param props - target text, animation trigger, and optional styling.
  * @returns the animated text node.
  */
@@ -35,10 +38,22 @@ export function DecryptText({ text, active, className }: {
 }): ReactNode {
   const [display, setDisplay] = useState(text)
   const done = useRef(false)
+  const revealed = useRef(text)
 
   useEffect(() => {
-    if (!active || done.current) return
-    if (text.length === 0) { done.current = true; return }
+    if (!active) {
+      setDisplay(text)
+      done.current = true
+      revealed.current = text
+      return
+    }
+    // A new value re-runs the reveal (even if a previous run completed);
+    // skip only when the text is unchanged AND already revealed. The
+    // interval's own setDisplay calls must NOT restart this effect, so
+    // "already revealed" is tracked in a ref, not via the display state.
+    if (done.current && revealed.current === text) return
+    done.current = false
+    if (text.length === 0) { done.current = true; revealed.current = text; setDisplay(text); return }
     const totalFrames = text.length * FRAMES_PER_CHAR
     let frame = 0
     const interval = setInterval(() => {
@@ -47,6 +62,7 @@ export function DecryptText({ text, active, className }: {
       if (decoded >= text.length) {
         clearInterval(interval)
         done.current = true
+        revealed.current = text
         setDisplay(text)
         return
       }

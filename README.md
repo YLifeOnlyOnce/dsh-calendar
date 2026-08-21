@@ -70,7 +70,8 @@ You use DeepSeek Harness every day — dozens of sessions, background jobs, sche
 | 🃏 **Main-UI cards** | Draggable mini cards (stats / year / 7-day / day / month) float over the main interface — move, collapse, or close them; pick which ones show in Settings. Frosted translucent cards with soft shadows, so they sit lightly on top of your work |
 | 🏷️ **Workspace headers** | Timeline rows carry a folder icon, a glowing accent bar, and a pill badge with session count + active time — at a glance, per workspace |
 | 🖱️ **Drill through** | Click any timeline bar to **open the actual conversation** |
-| 📊 **Stats strip** | Active time / sessions / turns / tool calls for the selected range, with count-up numbers |
+| 📊 **Stats strip** | Active time / sessions / turns / tool calls / **tokens** for the selected range, with count-up numbers |
+| 🪙 **Token usage** | Billed token accounting per day / session / workspace — exact when the provider reports usage, heuristically estimated otherwise |
 | 🎨 **Theme-aware** | Follows the harness theme — light and dark, automatically; bars and heat use the real brand blue in both themes |
 | ✨ **Animations** | Gentle entry effects and a decrypt-reveal headline — nothing janky, nothing in the way |
 | 🕐 **History, out of the box** | Past sessions are folded and cached at startup — last month's activity is visible without opening anything |
