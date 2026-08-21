@@ -18,7 +18,7 @@ const definition = createCalendarProjectionDefinition(config)
 describe('definition', () => {
   it('declares the calendar key and a stable state version', () => {
     expect(definition.key).toBe('calendar')
-    expect(definition.stateVersion).toBe(1)
+    expect(definition.stateVersion).toBe(2)
   })
 
   it('produces an empty view that passes the wire schema', () => {

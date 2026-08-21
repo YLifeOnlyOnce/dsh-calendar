@@ -104,7 +104,10 @@ export function createCalendarProjectionDefinition(config: Config): ProjectionDe
       ...activityView(state.activity),
       ...scheduleView(state.schedules),
     }),
-    stateVersion: 1,
+    // v1 → v2: day buckets gained tokensIn/tokensOut (wire schema change).
+    // A bumped stateVersion discards stale checkpoint rows so every session
+    // refolds and the new fields are present.
+    stateVersion: 2,
   }
 }
 

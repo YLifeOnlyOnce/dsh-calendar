@@ -35,6 +35,50 @@ import type { Config } from './config.ts'
 // Local-time helpers (DST-safe: boundaries computed on Date, never +24h math)
 // ---------------------------------------------------------------------------
 
+/** Fixed text-density heuristic (mirrors `@deepseek-ai/dsh-token-meter`). */
+const CHARS_PER_TOKEN = 4
+/** Per-block structural overhead for JSON framing and type tags. */
+const BLOCK_OVERHEAD = 4
+
+/** Estimate one text string under the fixed density heuristic. */
+function estimateText(text: string): number {
+  return Math.ceil(text.length / CHARS_PER_TOKEN) + BLOCK_OVERHEAD
+}
+
+/**
+ * Estimate a message's content blocks under the fixed heuristic — the same
+ * pricing the token meter applies when the provider reports no usage, so a
+ * silent adapter still yields meaningful, non-zero token figures.
+ */
+function estimateBlocks(blocks: unknown): number {
+  if (!Array.isArray(blocks)) return 0
+  let tokens = 0
+  for (const block of blocks) {
+    if (block === null || typeof block !== 'object') continue
+    const b = block as Record<string, unknown>
+    switch (b.type) {
+      case 'text':
+      case 'reasoning': {
+        const text = typeof b.text === 'string' ? b.text : ''
+        tokens += estimateText(text)
+        break
+      }
+      case 'tool-call': {
+        const name = typeof b.name === 'string' ? b.name : ''
+        const args = typeof b.arguments === 'string' ? b.arguments : JSON.stringify(b.arguments ?? '')
+        tokens += Math.ceil(name.length / CHARS_PER_TOKEN) + Math.ceil(args.length / CHARS_PER_TOKEN) + BLOCK_OVERHEAD
+        break
+      }
+      case 'tool-result':
+        tokens += estimateBlocks(b.content) + BLOCK_OVERHEAD
+        break
+      default:
+        tokens += BLOCK_OVERHEAD + Math.ceil(JSON.stringify(b).length / CHARS_PER_TOKEN)
+    }
+  }
+  return tokens
+}
+
 /** Local calendar date key, `YYYY-MM-DD`. */
 function localDateKey(ms: number): string {
   const d = new Date(ms)
@@ -122,6 +166,10 @@ export interface ActivityState {
   openSteps: Record<string, number>
   /** callId → dispatch facts, for open tool calls. */
   openCalls: Record<string, { start: number; turn: number }>
+  /** Whether any provider reported usage: once true, tokens use exact usage
+   * (never mixed with heuristic estimates — same all-or-nothing rule as the
+   * token meter's per-call anchor). */
+  usageReported: boolean
 }
 
 /** Fresh fold state for a new session. */
@@ -138,6 +186,7 @@ export function createActivityState(): ActivityState {
     current: null,
     openSteps: {},
     openCalls: {},
+    usageReported: false,
   }
 }
 
@@ -294,16 +343,29 @@ export function applyActivityEvent(state: ActivityState, event: SessionEvent, co
       delete openSteps[key]
       const llmMs = Math.max(0, event.time - start)
       const usage = event.data.usage
-      // Billed input = uncached + cacheRead + cacheWrite; output includes
-      // reasoning tokens. Absent usage (adapter reported none) adds 0.
-      const tokensIn = usage === undefined
-        ? 0
-        : usage.inputTokens + (usage.cacheReadTokens ?? 0) + (usage.cacheWriteTokens ?? 0)
-      const tokensOut = usage === undefined ? 0 : usage.outputTokens
-      if (tokensIn === 0 && tokensOut === 0) {
+      if (usage !== undefined) {
+        // Billed input = uncached + cacheRead + cacheWrite; output includes
+        // reasoning tokens. Exact figures set the session's usage mode.
+        const tokensIn = usage.inputTokens + (usage.cacheReadTokens ?? 0) + (usage.cacheWriteTokens ?? 0)
+        const tokensOut = usage.outputTokens
+        return addToDay(
+          { ...touched, openSteps, usageReported: true },
+          localDateKey(event.time),
+          { llmMs, tokensIn, tokensOut },
+          config,
+        )
+      }
+      // No provider usage: if this session never reported usage, estimate the
+      // output from content under the fixed heuristic (input was estimated on
+      // the user prompt / tool result). Once exact usage appears, never mix.
+      if (touched.usageReported) {
         return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs }, config)
       }
-      return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs, tokensIn, tokensOut }, config)
+      const tokensOut = estimateBlocks(event.data.message.content)
+      if (tokensOut === 0) {
+        return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs }, config)
+      }
+      return addToDay({ ...touched, openSteps }, localDateKey(event.time), { llmMs, tokensOut }, config)
     }
 
     case 'step/end': {
@@ -332,7 +394,12 @@ export function applyActivityEvent(state: ActivityState, event: SessionEvent, co
       if (!Object.hasOwn(touched.openCalls, callId)) return touched
       const openCalls = { ...touched.openCalls }
       delete openCalls[callId]
-      return { ...touched, openCalls }
+      // Tool results feed the next request's input; estimate when the session
+      // never reports usage (never mixed with exact usage).
+      if (touched.usageReported) return { ...touched, openCalls }
+      const tokensIn = estimateBlocks(event.data.message.content)
+      if (tokensIn === 0) return { ...touched, openCalls }
+      return addToDay({ ...touched, openCalls }, localDateKey(event.time), { tokensIn }, config)
     }
 
     case 'user/message': {
@@ -340,7 +407,13 @@ export function applyActivityEvent(state: ActivityState, event: SessionEvent, co
       // Only human-origin prompts are user interactions; inject/cron/goal
       // rounds are automated and already covered by their turn spans.
       if (event.data.source.kind !== 'user') return touched
-      const counted = addToDay(touched, localDateKey(event.time), { prompts: 1 }, config)
+      let counted = addToDay(touched, localDateKey(event.time), { prompts: 1 }, config)
+      // Prompt content is the next request's input; estimate when the session
+      // never reports usage (never mixed with exact usage).
+      if (!touched.usageReported) {
+        const tokensIn = estimateBlocks(event.data.content)
+        if (tokensIn > 0) counted = addToDay(counted, localDateKey(event.time), { tokensIn }, config)
+      }
       return pushRecent(counted, { start: event.time, end: event.time, kind: 'prompt' }, config)
     }
 

@@ -56,6 +56,22 @@ export function assistantMessageWithUsage(seq: number, time: number, turn: numbe
   })
 }
 
+/** `assistant/message` with text content (for heuristic token estimation). */
+export function assistantMessageWithText(seq: number, time: number, turn: number, step: number, text: string): SessionEvent {
+  return ev('assistant/message', seq, time, {
+    turn,
+    step,
+    message: { id: 'm', role: 'assistant', content: [{ type: 'text', text }], source: { kind: 'model', model: 'test' } },
+  })
+}
+
+/** `user/message` with text content (source kind `user`). */
+export function userMessageWithText(seq: number, time: number, text: string): SessionEvent {
+  return ev('user/message', seq, time, {
+    id: 'u', role: 'user', content: [{ type: 'text', text }], source: { kind: 'user' },
+  })
+}
+
 /** `tool/call` with `callId` at `time` (turn `turn`, step `step`). */
 export function toolCall(seq: number, time: number, turn: number, step: number, callId: string): SessionEvent {
   return ev('tool/call', seq, time, { turn, step, callId, name: 'bash', arguments: '{}' })

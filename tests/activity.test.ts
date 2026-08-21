@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest'
 import { applyActivityEvent, activityView, createActivityState } from '../src/activity'
 import type { Config } from '../src/config'
 import {
-  assistantMessage, assistantMessageWithUsage, endSeed, stepEnd, stepStart, todoWrite, toolCall, toolResult,
-  turnEnd, turnStart, userMessage,
+  assistantMessage, assistantMessageWithText, assistantMessageWithUsage, endSeed, stepEnd, stepStart, todoWrite, toolCall, toolResult,
+  turnEnd, turnStart, userMessage, userMessageWithText,
 } from './events'
 
 const MIN = 60_000
@@ -120,6 +120,46 @@ describe('counts', () => {
     expect(bucket).toBeDefined()
     expect(bucket).toMatchObject({ tokensIn: 150, tokensOut: 80 })
     expect((bucket?.tokensIn ?? 0) + (bucket?.tokensOut ?? 0)).toBe(230)
+  })
+
+  it('estimates tokens heuristically when the session never reports usage', () => {
+    const t0 = Date.UTC(2026, 0, 10, 16, 0, 0)
+    const state = fold([
+      userMessageWithText(0, t0, '你好'.repeat(20)), // 40 chars → 10 tokens + 4 overhead
+      turnStart(1, t0, 0),
+      stepStart(2, t0, 0, 0),
+      assistantMessageWithText(3, t0 + MIN, 0, 0, 'answer'.repeat(10)), // 60 chars → 15 tokens + 4
+      stepEnd(4, t0 + MIN, 0, 0),
+      turnEnd(5, t0 + MIN, 0),
+    ])
+    const bucket = activityView(state).days[0]
+    expect(bucket).toBeDefined()
+    // estimateText: ceil(chars/4) + 4 → input 14, output 19
+    expect((bucket?.tokensIn ?? 0)).toBe(14)
+    expect((bucket?.tokensOut ?? 0)).toBe(19)
+  })
+
+  it('never mixes heuristic estimates with exact usage', () => {
+    const t0 = Date.UTC(2026, 0, 10, 16, 0, 0)
+    const state = fold([
+      userMessageWithText(0, t0, 'long prompt '), // estimated before usage appears (12 chars → 7)
+      turnStart(1, t0, 0),
+      stepStart(2, t0, 0, 0),
+      assistantMessageWithUsage(3, t0 + MIN, 0, 0, { input: 100, output: 50 }),
+      stepEnd(4, t0 + MIN, 0, 0),
+      turnEnd(5, t0 + MIN, 0),
+      // A later usage-less step after exact usage: must NOT add estimates.
+      turnStart(6, t0 + 2 * MIN, 1),
+      stepStart(7, t0 + 2 * MIN, 1, 0),
+      assistantMessageWithText(8, t0 + 3 * MIN, 1, 0, 'some more output'),
+      stepEnd(9, t0 + 3 * MIN, 1, 0),
+      turnEnd(10, t0 + 3 * MIN, 1),
+    ])
+    const bucket = activityView(state).days[0]
+    expect(bucket).toBeDefined()
+    // Exact usage lands once reported; the pre-usage prompt estimate (7) stays
+    // in the accumulated bucket, but nothing AFTER exact usage is estimated.
+    expect(bucket).toMatchObject({ tokensIn: 107, tokensOut: 50 })
   })
 
   it('counts human prompts as points and ignores synthetic ones', () => {
