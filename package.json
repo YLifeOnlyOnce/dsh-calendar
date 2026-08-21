@@ -1,6 +1,6 @@
 {
   "name": "dsh-usage-calendar",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A beautiful usage calendar for DeepSeek Harness — see at a glance when and what DeepSeek did, in day/month/year views, with recurring-task scheduling.",
   "type": "module",
   "main": "lib/index.js",

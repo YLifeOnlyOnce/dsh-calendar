@@ -76,6 +76,13 @@ You use DeepSeek Harness every day — dozens of sessions, background jobs, sche
 | ✨ **Animations** | Gentle entry effects and a decrypt-reveal headline — nothing janky, nothing in the way |
 | 🕐 **History, out of the box** | Past sessions are folded and cached at startup — last month's activity is visible without opening anything |
 
+## Compatibility
+
+| dsh-usage-calendar | DeepSeek Harness |
+|---|---|
+| **0.1.4** | **0.1.1-rc.1** (`next`) — adapted to the session-projection `stateSchema` / `wire` unit contract; `@deepseek-ai/dsh-client-web-react` removed (merged upstream) |
+| 0.1.0 – 0.1.3 | 0.1.0-rc.7 |
+
 ## Install
 
 ```sh

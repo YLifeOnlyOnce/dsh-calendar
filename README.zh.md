@@ -76,6 +76,13 @@
 | ✨ **动画** | 柔和的入场效果与解密式标题动画 —— 不花哨、不碍事 |
 | 🕐 **历史数据开箱即用** | 过去的会话启动时自动折叠缓存 —— 上个月的活动无需打开任何会话即可见 |
 
+## 兼容性
+
+| dsh-usage-calendar | DeepSeek Harness |
+|---|---|
+| **0.1.4** | **0.1.1-rc.1**（`next`）—— 适配 session-projection 新的 `stateSchema` / `wire` 单元契约；移除 `@deepseek-ai/dsh-client-web-react`（已并入上游） |
+| 0.1.0 – 0.1.3 | 0.1.0-rc.7 |
+
 ## 安装
 
 ```sh
