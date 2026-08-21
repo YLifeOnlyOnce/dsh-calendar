@@ -34,6 +34,16 @@ export interface CalendarState {
   schedules: ScheduleState
 }
 
+// The host fold-state table: `calendar` is client-visible (it has a wire
+// view), so it must appear in both the state table and the client table
+// (the latter merged in types.ts).
+declare module '@deepseek-ai/dsh-session-projection/types' {
+  interface SessionProjectionStateMap {
+    /** The calendar fold state (activity + schedules sub-folds). */
+    calendar: CalendarState
+  }
+}
+
 /** Fresh combined state. */
 export function createCalendarState(): CalendarState {
   return { activity: createActivityState(), schedules: createScheduleState() }
@@ -89,10 +99,16 @@ export const calendarValueSchema = z.object({
  * Build the `calendar` unit for a plugin config. Registering the returned
  * definition is an effect on the calling fiber; unloading removes the key.
  */
-export function createCalendarProjectionDefinition(config: Config): ProjectionDefinition<'calendar', CalendarState> {
+export function createCalendarProjectionDefinition(config: Config): Omit<ProjectionDefinition<'calendar', CalendarState>, 'wire'> & {
+  wire: NonNullable<ProjectionDefinition<'calendar', CalendarState>['wire']>
+} {
   return {
     key: 'calendar',
-    schema: calendarValueSchema,
+    // Validates persisted state before it seeds a fold (0.1.1+ contract:
+    // `stateSchema` checks the fold state, `wire.viewSchema` the wire value).
+    // The fold is a pure function that rebuilds state from init by replaying
+    // events, so a structural shape check is enough here.
+    stateSchema: z.custom<CalendarState>(value => typeof value === 'object' && value !== null),
     init: createCalendarState,
     apply: (state, event: SessionEvent) => {
       const activity = applyActivityEvent(state.activity, event, config)
@@ -100,10 +116,13 @@ export function createCalendarProjectionDefinition(config: Config): ProjectionDe
       if (activity === state.activity && schedules === state.schedules) return state
       return { activity, schedules }
     },
-    view: state => ({
-      ...activityView(state.activity),
-      ...scheduleView(state.schedules),
-    }),
+    wire: {
+      viewSchema: calendarValueSchema,
+      view: state => ({
+        ...activityView(state.activity),
+        ...scheduleView(state.schedules),
+      }),
+    },
     // v1 → v2: day buckets gained tokensIn/tokensOut (wire schema change).
     // A bumped stateVersion discards stale checkpoint rows so every session
     // refolds and the new fields are present.

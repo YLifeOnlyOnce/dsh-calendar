@@ -23,7 +23,7 @@ describe('definition', () => {
 
   it('produces an empty view that passes the wire schema', () => {
     const state = definition.init()
-    const value = definition.view(state)
+    const value = definition.wire.view(state)
     expect(calendarValueSchema.safeParse(value).success).toBe(true)
     expect(value).toMatchObject({ totalActiveMs: 0, days: [], recentIntervals: [], schedules: [], scheduleHistory: [] })
     expect(value.hourProfile).toHaveLength(24)
@@ -50,7 +50,7 @@ describe('definition', () => {
       }),
     ]
     const state = events.reduce((s, e) => definition.apply(s, e), definition.init())
-    const value = definition.view(state)
+    const value = definition.wire.view(state)
     expect(calendarValueSchema.parse(value)).toEqual(value)
     expect(value.totalActiveMs).toBe(180_000)
     expect(value.days).toHaveLength(1)
